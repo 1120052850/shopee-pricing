@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shopee 定价计算器</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #ee4d2d; /* Shopee 红 */
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .result {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .highlight {
+      font-size: 1.2em;
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #ee4d2d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #d03a1f;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛒 Shopee 定价计算器</h1>
+
+  <div class="form-group">
+    <label for="site">Shopee 站点</label>
+    <select id="site">
+      <option value="tw" data-commission="5" data-fee="0">台湾 (佣金 5%)</option>
+      <option value="my" data-commission="5" data-fee="2">马来 (佣金 5% + 手续费 2%)</option>
+      <option value="th" data-commission="5" data-fee="0">泰国 (佣金 5%)</option>
+      <option value="sg" data-commission="6" data-fee="0">新加坡 (佣金 6%)</option>
+      <option value="custom">自定义</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>采购成本（元）</label>
+    <input type="number" id="cost" placeholder="例如：15.00" step="0.01" value="15">
+  </div>
+
+  <div class="form-group">
+    <label>运费（元）</label>
+    <input type="number" id="shipping" placeholder="例如：3.00" step="0.01" value="3">
+  </div>
+
+  <div class="form-group">
+    <label>包装成本（元）</label>
+    <input type="number" id="packaging" placeholder="例如：1.00" step="0.01" value="1">
+  </div>
+
+  <div class="form-group">
+    <label>其他成本（元）</label>
+    <input type="number" id="other" placeholder="例如：0.50" step="0.01" value="0.5">
+  </div>
+
+  <div class="form-group">
+    <label>目标利润率（%）</label>
+    <input type="number" id="profit" placeholder="例如：30" value="30">
+  </div>
+
+  <div class="form-group">
+    <label>营销费用（广告/优惠券，元）</label>
+    <input type="number" id="marketing" placeholder="例如：2.00" step="0.01" value="2">
+  </div>
+
+  <!-- 自定义佣金/手续费（默认隐藏） -->
+  <div class="form-group" id="custom-fields" style="display:none;">
+    <label>平台佣金（%）</label>
+    <input type="number" id="commission" value="5" step="0.1">
+    <label>交易手续费（%）</label>
+    <input type="number" id="fee" value="0" step="0.1">
+  </div>
+
+  <button onclick="calculate()">立即计算建议售价</button>
+
+  <div class="result" id="result" style="display:none;">
+    <p>✅ 总成本：<span id="totalCost"></span> 元</p>
+    <p>🎯 目标售价（不含平台费）：<span id="targetPrice"></span> 元</p>
+    <p>💡 <strong>建议上架售价（含平台费 & 营销）：</strong><br>
+       <span class="highlight" id="finalPrice"></span> 元</p>
+    <p>📌 提示：已自动优化为 .99 结尾，提升转化率！</p>
+  </div>
+
+  <script>
+    document.getElementById('site').addEventListener('change', function() {
+      const custom = document.getElementById('custom-fields');
+      if (this.value === 'custom') {
+        custom.style.display = 'block';
+      } else {
+        custom.style.display = 'none';
+      }
+    });
+
+    function calculate() {
+      const siteSel = document.getElementById('site');
+      let commission = 5, fee = 0;
+      
+      if (siteSel.value === 'custom') {
+        commission = parseFloat(document.getElementById('commission').value) || 0;
+        fee = parseFloat(document.getElementById('fee').value) || 0;
+      } else {
+        const option = siteSel.selectedOptions[0];
+        commission = parseFloat(option.dataset.commission);
+        fee = parseFloat(option.dataset.fee);
+      }
+
+      const cost = parseFloat(document.getElementById('cost').value) || 0;
+      const shipping = parseFloat(document.getElementById('shipping').value) || 0;
+      const packaging = parseFloat(document.getElementById('packaging').value) || 0;
+      const other = parseFloat(document.getElementById('other').value) || 0;
+      const profitPercent = parseFloat(document.getElementById('profit').value) || 0;
+      const marketing = parseFloat(document.getElementById('marketing').value) || 0;
+
+      const totalCost = cost + shipping + packaging + other;
+      const targetPrice = totalCost * (1 + profitPercent / 100);
+      const platformRate = (commission + fee) / 100;
+
+      // 计算上架价：满足 (上架价 * (1 - platformRate)) - marketing >= targetPrice
+      let finalPrice = (targetPrice + marketing) / (1 - platformRate);
+
+      // 心理定价：向上取整到 .99
+      finalPrice = Math.ceil(finalPrice) - 0.01;
+      if (finalPrice < 0) finalPrice = 0;
+
+      // 显示结果
+      document.getElementById('totalCost').textContent = totalCost.toFixed(2);
+      document.getElementById('targetPrice').textContent = targetPrice.toFixed(2);
+      document.getElementById('finalPrice').textContent = finalPrice.toFixed(2);
+      document.getElementById('result').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
