@@ -3,60 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>东南亚跨境定价计算器 - Shopee / Lazada / TikTok</title>
-  <meta name="description" content="支持 Shopee、Lazada、TikTok Shop 越南/泰国跨境与本土定价，基于真实费率">
+  <title>东南亚跨境定价计算器</title>
+  <meta name="description" content="Shopee / Lazada / TikTok 定价工具 · 左右布局">
   <style>
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      max-width: 700px;
-      margin: 25px auto;
-      padding: 20px;
-      background: #fafafa;
+      background: #f8f9fa;
       color: #333;
-      line-height: 1.6;
+      line-height: 1.5;
     }
-    h1 {
-      text-align: center;
+    .container {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      min-height: 100vh;
+      box-shadow: 0 0 20px rgba(0,0,0,0.08);
+      background: white;
+    }
+
+    /* 左侧：输入区 */
+    .input-panel {
+      flex: 0 0 60%;
+      padding: 30px;
+      background: #fff;
+      border-right: 1px solid #eee;
+    }
+    .input-panel h1 {
       color: #ee4d2d;
-      margin-bottom: 20px;
-      font-size: 26px;
+      margin-bottom: 25px;
+      font-size: 24px;
     }
     .subtitle {
-      text-align: center;
       color: #666;
-      margin-top: -15px;
+      margin-bottom: 25px;
       font-size: 14px;
     }
+
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
     label {
       display: block;
       margin-bottom: 6px;
       font-weight: 600;
-      color: #555;
+      color: #444;
     }
     input, select {
       width: 100%;
-      padding: 10px;
+      padding: 10px 12px;
       border: 1px solid #ddd;
       border-radius: 6px;
       font-size: 15px;
     }
-    .result {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      margin-top: 25px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      border-left: 4px solid #ee4d2d;
+    .note {
+      font-size: 13px;
+      color: #888;
+      margin-top: 5px;
     }
-    .highlight {
-      font-size: 1.3em;
-      color: #e74c3c;
-      font-weight: bold;
-    }
+
     button {
       width: 100%;
       padding: 14px;
@@ -68,186 +73,219 @@
       font-weight: bold;
       cursor: pointer;
       transition: background 0.2s;
+      margin-top: 10px;
     }
     button:hover {
       background: #d03a1f;
     }
-    .note {
-      font-size: 13px;
-      color: #888;
-      margin-top: 5px;
+
+    /* 右侧：结果区 */
+    .result-panel {
+      flex: 0 0 40%;
+      padding: 30px;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .local-currency {
+    .result-placeholder {
+      text-align: center;
+      color: #999;
+      padding: 20px;
+    }
+    .result-box {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-left: 4px solid #ee4d2d;
+    }
+    .result-item {
+      margin-bottom: 15px;
+    }
+    .result-label {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .result-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+    .final-price {
+      font-size: 24px;
+      color: #e74c3c;
+      margin: 10px 0;
+    }
+    .local-price {
+      font-size: 20px;
       color: #2c3e50;
       font-weight: bold;
-      font-size: 1.1em;
     }
-    .platform-tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-left: 8px;
-      color: white;
+
+    /* 响应式：小屏变上下布局 */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        min-height: auto;
+      }
+      .input-panel, .result-panel {
+        flex: none;
+        width: 100%;
+        padding: 20px;
+      }
+      .input-panel {
+        border-right: none;
+        border-bottom: 1px solid #eee;
+      }
     }
-    .shopee { background: #ee4d2d; }
-    .lazada { background: #222; }
-    .tiktok { background: #000; }
   </style>
 </head>
 <body>
-  <h1>🌍 东南亚跨境定价计算器</h1>
-  <p class="subtitle">Shopee / Lazada / TikTok Shop · 基于真实费率 & 干线价卡</p>
+  <div class="container">
+    <!-- 左侧：输入 -->
+    <div class="input-panel">
+      <h1>🌍 东南亚跨境定价计算器</h1>
+      <p class="subtitle">支持 Shopee / Lazada / TikTok Shop · 越南 & 泰国站点</p>
 
-  <div class="form-group">
-    <label for="site">选择平台与站点</label>
-    <select id="site">
-      <!-- Shopee -->
-      <optgroup label="Shopee">
-        <option value="shopee_vn">越南（跨境）<span class="platform-tag shopee">Shopee</span></option>
-        <option value="shopee_th_cross">泰国（跨境）<span class="platform-tag shopee">Shopee</span></option>
-        <option value="shopee_th_local">泰国（本土）<span class="platform-tag shopee">Shopee</span></option>
-      </optgroup>
-      <!-- Lazada -->
-      <optgroup label="Lazada">
-        <option value="lazada_vn">越南（跨境）<span class="platform-tag lazada">Lazada</span></option>
-        <option value="lazada_th">泰国（跨境）<span class="platform-tag lazada">Lazada</span></option>
-      </optgroup>
-      <!-- TikTok -->
-      <optgroup label="TikTok Shop">
-        <option value="tiktok_vn">越南<span class="platform-tag tiktok">TikTok</span></option>
-        <option value="tiktok_th">泰国<span class="platform-tag tiktok">TikTok</span></option>
-      </optgroup>
-      <option value="custom">自定义</option>
-    </select>
-  </div>
+      <div class="form-group">
+        <label for="site">选择平台与站点</label>
+        <select id="site">
+          <optgroup label="Shopee">
+            <option value="shopee_vn">Shopee 越南（跨境）</option>
+            <option value="shopee_th_cross">Shopee 泰国（跨境）</option>
+            <option value="shopee_th_local">Shopee 泰国（本土）</option>
+          </optgroup>
+          <optgroup label="Lazada">
+            <option value="lazada_vn">Lazada 越南（跨境）</option>
+            <option value="lazada_th">Lazada 泰国（跨境）</option>
+          </optgroup>
+          <optgroup label="TikTok Shop">
+            <option value="tiktok_vn">TikTok 越南</option>
+            <option value="tiktok_th">TikTok 泰国</option>
+          </optgroup>
+          <option value="custom">自定义</option>
+        </select>
+      </div>
 
-  <div class="form-group">
-    <label>采购成本（元）</label>
-    <input type="number" id="cost" placeholder="例如：30.00" step="0.01" value="30">
-  </div>
+      <div class="form-group">
+        <label>采购成本（元）</label>
+        <input type="number" id="cost" placeholder="例如：30.00" step="0.01" value="30">
+      </div>
 
-  <div class="form-group">
-    <label>商品重量（克）</label>
-    <input type="number" id="weight" placeholder="例如：150" value="150" min="1">
-    <div class="note">用于自动计算干线物流（基于南宁仓价卡）</div>
-  </div>
+      <div class="form-group">
+        <label>商品重量（克）</label>
+        <input type="number" id="weight" placeholder="例如：150" value="150" min="1">
+        <div class="note">自动计算干线物流（基于南宁仓价卡）</div>
+      </div>
 
-  <div class="form-group">
-    <label>包装成本（元）</label>
-    <input type="number" id="packaging" placeholder="例如：1.00" step="0.01" value="1">
-  </div>
+      <div class="form-group">
+        <label>包装成本（元）</label>
+        <input type="number" id="packaging" placeholder="例如：1.00" step="0.01" value="1">
+      </div>
 
-  <div class="form-group">
-    <label>目标利润率（%）</label>
-    <input type="number" id="profit" placeholder="例如：30" value="30">
-  </div>
+      <div class="form-group">
+        <label>目标利润率（%）</label>
+        <input type="number" id="profit" placeholder="例如：30" value="30">
+      </div>
 
-  <div class="form-group">
-    <label>营销费用（广告/优惠券，元）</label>
-    <input type="number" id="marketing" placeholder="例如：2.00" step="0.01" value="0">
-    <div class="note">大促时建议设为 0，手动调价更安全</div>
-  </div>
+      <div class="form-group">
+        <label>营销费用（广告/优惠券，元）</label>
+        <input type="number" id="marketing" placeholder="例如：2.00" step="0.01" value="0">
+        <div class="note">大促时建议设为 0</div>
+      </div>
 
-  <!-- 自定义字段（默认隐藏） -->
-  <div class="form-group" id="custom-fields" style="display:none;">
-    <label>平台佣金（%）</label>
-    <input type="number" id="commission" value="5" step="0.1">
-    <label>交易手续费（%）</label>
-    <input type="number" id="fee" value="2" step="0.1">
-    <label>服务费（%）</label>
-    <input type="number" id="serviceFee" value="0" step="0.1">
-    <label>汇率（1 CNY = ? 本地币）</label>
-    <input type="number" id="exchange" value="3700" step="1">
-  </div>
+      <!-- 自定义字段 -->
+      <div class="form-group" id="custom-fields" style="display:none;">
+        <label>平台佣金（%）</label>
+        <input type="number" id="commission" value="5" step="0.1">
+        <label>交易手续费（%）</label>
+        <input type="number" id="fee" value="2" step="0.1">
+        <label>服务费（%）</label>
+        <input type="number" id="serviceFee" value="0" step="0.1">
+        <label>汇率（1 CNY = ? 本地币）</label>
+        <input type="number" id="exchange" value="3700" step="1">
+      </div>
 
-  <button onclick="calculate()">立即计算建议售价</button>
+      <button onclick="calculate()">🚀 立即计算建议售价</button>
+    </div>
 
-  <div class="result" id="result" style="display:none;">
-    <p>📦 总成本：<span id="totalCost"></span> 元</p>
-    <p>🎯 目标净收入：<span id="targetNet"></span> 元</p>
-    <p>💡 <strong>建议上架售价（人民币）：</strong><br>
-       <span class="highlight" id="finalPriceRMB"></span> 元</p>
-    <p>🌍 <strong>本地货币建议价：</strong><br>
-       <span class="local-currency" id="localPrice"></span></p>
-    <p style="margin-top:10px; color:#666; font-size:14px;">
-      ✅ 已包含：平台佣金 + 手续费 + 服务费 + 干线物流<br>
-      💡 价格已优化为 .99 结尾，提升转化率
-    </p>
+    <!-- 右侧：结果 -->
+    <div class="result-panel">
+      <div id="result-placeholder" class="result-placeholder">
+        <p>填写左侧参数<br>点击“立即计算”<br>查看定价建议</p>
+      </div>
+      <div id="result-box" class="result-box" style="display:none;">
+        <div class="result-item">
+          <div class="result-label">📦 总成本</div>
+          <div class="result-value" id="totalCost">—</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">🎯 目标净收入</div>
+          <div class="result-value" id="targetNet">—</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">💡 建议上架价（人民币）</div>
+          <div class="final-price" id="finalPriceRMB">—</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">🌍 本地货币建议价</div>
+          <div class="local-price" id="localPrice">—</div>
+        </div>
+        <div style="margin-top:20px; font-size:13px; color:#777;">
+          ✅ 已含：平台费 + 干线物流<br>
+          💡 价格已优化为 .99 结尾
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
-    // 南宁仓干线价卡（VND）
-    const vnShippingTiers = [
-      [30, 3500], [50, 4000], [100, 4400], [200, 5300],
-      [300, 6200], [500, 7800], [1000, 11000]
-    ];
-
-    // 泰国干线估算（元）
-    function getThailandShipping(weight) {
-      if (weight <= 100) return 29;
-      if (weight <= 200) return 45;
-      if (weight <= 500) return 80;
-      return 120;
+    // 干线价卡（VND）
+    const vnShippingTiers = [[30,3500],[50,4000],[100,4400],[200,5300],[300,6200],[500,7800],[1000,11000]];
+    function getThailandShipping(w) {
+      if (w<=100) return 29; if (w<=200) return 45; if (w<=500) return 80; return 120;
     }
 
-    document.getElementById('site').addEventListener('change', function() {
-      document.getElementById('custom-fields').style.display = 
-        this.value === 'custom' ? 'block' : 'none';
+    document.getElementById('site').addEventListener('change', e => {
+      document.getElementById('custom-fields').style.display = e.target.value === 'custom' ? 'block' : 'none';
     });
 
     function calculate() {
       const site = document.getElementById('site').value;
-      let commission = 0, fee = 0, serviceFee = 0, exchangeRate = 1, shippingRMB = 0;
-
+      let commission=0, fee=0, serviceFee=0, exchangeRate=1, shippingRMB=0;
       const weight = parseFloat(document.getElementById('weight').value) || 100;
 
-      // ========== 平台费率配置（来自你的定价表） ==========
       switch(site) {
-        // --- Shopee ---
         case 'shopee_vn':
-          commission = 15.33; fee = 4.91; serviceFee = 5.0; exchangeRate = 3700;
-          // 干线：VND → RMB
-          let vnShip = 11000;
-          for (const [w, p] of vnShippingTiers) {
-            if (weight <= w) { vnShip = p; break; }
-          }
-          shippingRMB = vnShip / 3700;
+          [commission, fee, serviceFee, exchangeRate] = [15.33, 4.91, 5.0, 3700];
+          shippingRMB = (vnShippingTiers.find(([w])=>weight<=w)?.[1] || 11000) / 3700;
           break;
-
         case 'shopee_th_cross':
-          commission = 18.19; fee = 3.21; serviceFee = 5.35; exchangeRate = 5;
+          [commission, fee, serviceFee, exchangeRate] = [18.19, 3.21, 5.35, 5];
           shippingRMB = getThailandShipping(weight);
           break;
-
         case 'shopee_th_local':
-          commission = 8.56; fee = 3.21; serviceFee = 7.49; exchangeRate = 5;
-          shippingRMB = 1.0; // 本土仓
+          [commission, fee, serviceFee, exchangeRate] = [8.56, 3.21, 7.49, 5];
+          shippingRMB = 1.0;
           break;
-
-        // --- Lazada ---
         case 'lazada_vn':
-          commission = 4; fee = 2; serviceFee = 0; exchangeRate = 3700;
-          shippingRMB = vnShippingTiers.find(([w]) => weight <= w)?.[1] / 3700 || 3;
+          [commission, fee, serviceFee, exchangeRate] = [4, 2, 0, 3700];
+          shippingRMB = (vnShippingTiers.find(([w])=>weight<=w)?.[1] || 3500) / 3700;
           break;
-
         case 'lazada_th':
-          commission = 4; fee = 2; serviceFee = 0; exchangeRate = 5;
-          shippingRMB = getThailandShipping(weight) * 0.8; // Lazada 通常略低
+          [commission, fee, serviceFee, exchangeRate] = [4, 2, 0, 5];
+          shippingRMB = getThailandShipping(weight) * 0.8;
           break;
-
-        // --- TikTok Shop ---
         case 'tiktok_vn':
-          commission = 5; fee = 2; serviceFee = 0; exchangeRate = 3700;
-          shippingRMB = vnShippingTiers.find(([w]) => weight <= w)?.[1] / 3700 || 3;
+          [commission, fee, serviceFee, exchangeRate] = [5, 2, 0, 3700];
+          shippingRMB = (vnShippingTiers.find(([w])=>weight<=w)?.[1] || 3500) / 3700;
           break;
-
         case 'tiktok_th':
-          commission = 5; fee = 2; serviceFee = 0; exchangeRate = 5;
+          [commission, fee, serviceFee, exchangeRate] = [5, 2, 0, 5];
           shippingRMB = getThailandShipping(weight) * 0.9;
           break;
-
-        // --- 自定义 ---
         default:
           commission = parseFloat(document.getElementById('commission').value) || 0;
           fee = parseFloat(document.getElementById('fee').value) || 0;
@@ -257,38 +295,32 @@
       }
 
       const totalRate = (commission + fee + serviceFee) / 100;
-      if (totalRate >= 1) {
-        alert("平台总费率不能 ≥ 100%");
-        return;
-      }
+      if (totalRate >= 1) { alert("平台费率不能 ≥ 100%"); return; }
 
-      // 成本计算
       const cost = parseFloat(document.getElementById('cost').value) || 0;
       const packaging = parseFloat(document.getElementById('packaging').value) || 0;
-      const profitPercent = parseFloat(document.getElementById('profit').value) || 0;
+      const profit = parseFloat(document.getElementById('profit').value) || 0;
       const marketing = parseFloat(document.getElementById('marketing').value) || 0;
 
       const totalCost = cost + shippingRMB + packaging;
-      const targetNet = totalCost * (1 + profitPercent / 100);
+      const targetNet = totalCost * (1 + profit / 100);
+      let finalRMB = (targetNet + marketing) / (1 - totalRate);
+      finalRMB = Math.ceil(finalRMB) - 0.01;
+      if (finalRMB < 0) finalRMB = 0;
 
-      // 核心定价公式
-      let finalPriceRMB = (targetNet + marketing) / (1 - totalRate);
-      finalPriceRMB = Math.ceil(finalPriceRMB) - 0.01;
-      if (finalPriceRMB < 0) finalPriceRMB = 0;
-
-      // 本地货币格式化
-      const localValue = finalPriceRMB * exchangeRate;
+      const localVal = finalRMB * exchangeRate;
       const currency = site.includes('vn') ? 'VND' : 'THB';
-      const formatted = currency === 'VND' 
-        ? Math.round(localValue).toLocaleString() 
-        : localValue.toFixed(0);
+      const localStr = currency === 'VND' ? Math.round(localVal).toLocaleString() : localVal.toFixed(0);
 
-      // 显示结果
-      document.getElementById('totalCost').textContent = totalCost.toFixed(2);
-      document.getElementById('targetNet').textContent = targetNet.toFixed(2);
-      document.getElementById('finalPriceRMB').textContent = finalPriceRMB.toFixed(2);
-      document.getElementById('localPrice').textContent = ` $ {formatted}  $ {currency}`;
-      document.getElementById('result').style.display = 'block';
+      // 更新结果
+      document.getElementById('totalCost').textContent = totalCost.toFixed(2) + ' 元';
+      document.getElementById('targetNet').textContent = targetNet.toFixed(2) + ' 元';
+      document.getElementById('finalPriceRMB').textContent = finalRMB.toFixed(2) + ' 元';
+      document.getElementById('localPrice').textContent = ` $ {localStr}  $ {currency}`;
+
+      // 显示结果区
+      document.getElementById('result-placeholder').style.display = 'none';
+      document.getElementById('result-box').style.display = 'block';
     }
   </script>
 </body>
