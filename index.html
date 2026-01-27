@@ -361,25 +361,24 @@
     // 更新时间戳显示
     function updateExchangeTimestamp() {
       if (!LAST_EXCHANGE_UPDATE) {
-        document.getElementById('exchange-timestamp').innerHTML = `
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <span>汇率加载失败</span>
-        `;
+        document.getElementById('exchange-timestamp').innerHTML = 
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+            '<circle cx="12" cy="12" r="10"></circle>' +
+            '<line x1="12" y1="8" x2="12" y2="12"></line>' +
+            '<line x1="12" y1="16" x2="12.01" y2="16"></line>' +
+          '</svg>' +
+          '<span>汇率加载失败</span>';
         return;
       }
 
       const formattedTime = formatTimestamp(LAST_EXCHANGE_UPDATE);
       document.getElementById('exchange-timestamp').innerHTML = `
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12,6 12,12 16,14"></polyline>
-        </svg>
-        <span>汇率更新于  $ {formattedTime}（来源：exchangerate-api.com）</span>
-      `;
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" 
+          stroke="currentColor" stroke-width="2">' +
+          '<circle cx="12" cy="12" r="10"></circle>' +
+          '<polyline points="12,6 12,12 16,14"></polyline>' +
+        '</svg>' +
+        '<span>汇率更新于 ' + formattedTime + '（来源：exchangerate-api.com）</span>';
     }
 
     // 加载配置
@@ -545,3 +544,4 @@
   </script>
 </body>
 </html>
+
