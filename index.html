@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>东南亚跨境定价计算器 - 平台与货币分离</title>
-  <meta name="description" content="Shopee/Lazada/TikTok 定价 · 平台费率与目标货币独立选择 · 实时汇率带时间戳">
+  <title>泰越跨境定价计算器</title>
+  <meta name="description" content="Shopee / Lazada / TikTok · 专注泰国 & 越南市场">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -42,22 +42,17 @@
     .exchange-badge {
       background: #e9f7ef;
       color: #27ae60;
-      padding: 4px 12px;
+      padding: 6px 12px;
       border-radius: 20px;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: bold;
       white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .currency-icon {
-      font-size: 14px;
+      display: inline-block;
     }
     .exchange-timestamp {
       font-size: 12px;
       color: #888;
-      margin-bottom: 15px;
+      margin: 8px 0 20px 0;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -92,14 +87,34 @@
     .exchange-note {
       font-size: 12px;
       color: #e74c3c;
-      margin-top: 4px;
+      margin-top: 8px;
       display: flex;
       align-items: center;
     }
     .exchange-note svg {
       margin-right: 5px;
     }
-    button {
+
+    .currency-btn {
+      padding: 4px 8px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .currency-btn:hover {
+      background: #f0f0f0;
+    }
+    .currency-btn.active {
+      background: #e9f7ef;
+      border-color: #27ae60;
+      color: #27ae60;
+      font-weight: bold;
+    }
+
+    button#calcBtn {
       width: 100%;
       padding: 14px;
       background: #ee4d2d;
@@ -112,8 +127,8 @@
       transition: background 0.2s;
       margin-top: 10px;
     }
-    button:hover { background: #d03a1f; }
-    button:disabled {
+    button#calcBtn:hover { background: #d03a1f; }
+    button#calcBtn:disabled {
       background: #ccc;
       cursor: not-allowed;
     }
@@ -195,16 +210,10 @@
 <body>
   <div class="container">
     <div class="input-panel">
-      <!-- 标题 + 汇率徽章 -->
       <div class="header-row">
-        <h1>🌍 东南亚跨境定价计算器</h1>
-        <div id="live-exchange-badge" class="exchange-badge">
-          <span class="currency-icon">💱</span>
-          <span>CNY ≈ —</span>
-        </div>
+        <h1>🇹🇭🇻🇳 泰越跨境定价计算器</h1>
       </div>
 
-      <!-- ✅ 汇率时间戳 -->
       <div id="exchange-timestamp" class="exchange-timestamp">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"></circle>
@@ -213,28 +222,13 @@
         <span>正在加载汇率…</span>
       </div>
 
-      <p class="subtitle">平台费率与目标货币独立选择 · 含实时汇率与时间戳</p>
+      <p class="subtitle">专注泰国 & 越南 · 支持 Shopee / Lazada / TikTok</p>
 
-      <!-- ✅ 平台选择 -->
       <div class="form-group">
-        <label for="site">选择平台与站点（决定费率 & 物流）</label>
+        <label for="site">选择平台与站点</label>
         <select id="site" disabled>
           <option value="">加载中...</option>
         </select>
-      </div>
-
-      <!-- ✅ 独立货币选择 -->
-      <div class="form-group">
-        <label for="targetCurrency">目标市场货币（决定汇率 & 显示）</label>
-        <select id="targetCurrency">
-          <option value="VND">越南盾 (₫) - VND</option>
-          <option value="THB">泰铢 (฿) - THB</option>
-          <option value="PHP">菲律宾比索 (₱) - PHP</option>
-          <option value="MYR">马来西亚林吉特 (RM) - MYR</option>
-        </select>
-        <div class="note" style="font-size:12px; color:#888;">
-          注：此选项仅影响汇率换算与本地售价显示，不影响平台费率
-        </div>
       </div>
 
       <div class="form-group">
@@ -265,8 +259,19 @@
       </div>
 
       <div class="form-group">
-        <label>当前汇率（1 CNY = ? 本地币）</label>
-        <input type="number" id="exchangeRateInput" step="0.01" readonly>
+        <label>实时汇率（可手动修改）</label>
+        <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+          <input type="number" id="exchangeRateInput" step="0.01" readonly style="flex:1; max-width: 120px;">
+          <div id="live-exchange-badge" class="exchange-badge">
+            CNY ≈ —
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button type="button" class="currency-btn" data-currency="VND">VND</button>
+            <button type="button" class="currency-btn" data-currency="THB">THB</button>
+            <button type="button" class="currency-btn" data-currency="PHP">PHP</button>
+            <button type="button" class="currency-btn" data-currency="MYR">MYR</button>
+          </div>
+        </div>
         <div class="exchange-note">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
@@ -280,7 +285,6 @@
       <button id="calcBtn" onclick="calculate()" disabled>🚀 立即计算建议售价</button>
     </div>
 
-    <!-- 结果区 -->
     <div class="result-panel">
       <div id="result-placeholder" class="result-placeholder">
         <p>填写左侧参数<br>点击“立即计算”<br>查看完整利润分析</p>
@@ -346,7 +350,7 @@
     let CONFIG = null;
     let EXCHANGE_RATES = null;
     let LAST_EXCHANGE_UPDATE = null;
-    let CURRENT_CURRENCY = 'VND'; // 默认货币
+    let CURRENT_CURRENCY = 'VND';
 
     const CURRENCY_SYMBOLS = {
       'VND': '₫',
@@ -355,7 +359,6 @@
       'MYR': 'RM'
     };
 
-    // 格式化时间戳
     function formatTimestamp(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -365,16 +368,11 @@
       return ` $ {year}- $ {month}- $ {day}  $ {hours}: $ {minutes}`;
     }
 
-    // 更新汇率徽章（使用字符串拼接）
     function updateExchangeBadge(currency, rate) {
-      const symbol = CURRENCY_SYMBOLS[currency] || currency;
-      const html = 
-        '<span class="currency-icon">' + symbol + '</span>' +
-        '<span>CNY ≈ ' + rate.toFixed(2) + ' ' + currency + '</span>';
-      document.getElementById('live-exchange-badge').innerHTML = html;
+      const html = 'CNY ≈ ' + rate.toFixed(2) + ' ' + currency;
+      document.getElementById('live-exchange-badge').textContent = html;
     }
 
-    // 更新时间戳显示（使用字符串拼接）
     function updateExchangeTimestamp() {
       if (!LAST_EXCHANGE_UPDATE) {
         document.getElementById('exchange-timestamp').innerHTML = 
@@ -396,7 +394,6 @@
         '<span>汇率更新于 ' + formattedTime + '（来源：exchangerate-api.com）</span>';
     }
 
-    // 加载配置
     async function loadConfig() {
       try {
         const res = await fetch('config.json?' + Date.now());
@@ -415,17 +412,31 @@
         select.disabled = false;
         document.getElementById('calcBtn').disabled = false;
 
-        // 初始化货币选择
-        document.getElementById('targetCurrency').value = 'VND';
-        CURRENT_CURRENCY = 'VND';
-        document.getElementById('targetCurrency').dispatchEvent(new Event('change'));
+        document.querySelector('.currency-btn[data-currency="VND"]').classList.add('active');
+
+        document.querySelectorAll('.currency-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const currency = btn.dataset.currency;
+            CURRENT_CURRENCY = currency;
+            if (EXCHANGE_RATES) {
+              const rate = EXCHANGE_RATES[currency] || 1;
+              document.getElementById('exchangeRateInput').value = rate.toFixed(2);
+              updateExchangeBadge(currency, rate);
+            } else {
+              const currentRate = parseFloat(document.getElementById('exchangeRateInput').value) || 1;
+              updateExchangeBadge(currency, currentRate);
+            }
+          });
+        });
+
       } catch (err) {
         alert('❌ 无法加载 config.json');
         console.error(err);
       }
     }
 
-    // 加载汇率
     async function loadExchangeRates() {
       try {
         const res = await fetch('https://api.exchangerate-api.com/v4/latest/CNY');
@@ -448,21 +459,6 @@
       }
     }
 
-    // 货币切换监听
-    document.getElementById('targetCurrency').addEventListener('change', e => {
-      const currency = e.target.value;
-      CURRENT_CURRENCY = currency;
-      if (EXCHANGE_RATES) {
-        const rate = EXCHANGE_RATES[currency] || 1;
-        document.getElementById('exchangeRateInput').value = rate.toFixed(2);
-        updateExchangeBadge(currency, rate);
-      } else {
-        const currentRate = parseFloat(document.getElementById('exchangeRateInput').value) || 1;
-        updateExchangeBadge(currency, currentRate);
-      }
-    });
-
-    // 泰国跨境运费
     function getThailandShipping(weight) {
       const base = CONFIG.shipping.th_cross_base;
       if (weight <= 100) return base["100"];
@@ -471,7 +467,6 @@
       return base["1000"];
     }
 
-    // 计算主函数
     function calculate() {
       if (!CONFIG) { alert('配置未加载完成'); return; }
       
@@ -479,31 +474,34 @@
       let commission = 0, fee = 0, serviceFee = 0, shippingRMB = 0;
       const weight = parseFloat(document.getElementById('weight').value) || 100;
 
-      // ✅ 关键：使用独立选择的货币
       const currencyCode = CURRENT_CURRENCY;
       const exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 1;
 
       updateExchangeBadge(currencyCode, exchangeRate);
 
-      // 平台逻辑（只影响费率和物流）
       if (site && CONFIG.platforms[site]) {
         const plat = CONFIG.platforms[site];
         ({commission, fee, serviceFee} = plat);
         
+        // ✅ 仅处理越南 & 泰国物流
         if (plat.shippingType === 'vn') {
+          // 越南跨境：按重量查 tier
           const tier = CONFIG.shipping.vn_tiers.find(([w]) => weight <= w);
-          const vnShip = tier ? tier[1] : 11000;
+          const vnShip = tier ? tier[1] : 11000; // 单位：VND
           shippingRMB = vnShip / exchangeRate;
         } else if (plat.shippingType === 'th_cross') {
+          // 泰国跨境：固定人民币成本
           shippingRMB = getThailandShipping(weight);
         } else if (plat.shippingType === 'th_local' || plat.shippingType === 'vn_local') {
-          shippingRMB = 1.0; // 本土店假设本地发货
+          // 本土仓发货，物流成本极低
+          shippingRMB = 1.0;
         } else {
-          shippingRMB = 2.0; // 默认
+          // 默认兜底（理论上不会触发）
+          shippingRMB = 2.0;
         }
       } else {
-        commission = 5; fee = 2; serviceFee = 0;
-        shippingRMB = 2.0;
+        alert('请选择有效平台');
+        return;
       }
 
       const totalRate = (commission + fee + serviceFee) / 100;
