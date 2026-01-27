@@ -42,19 +42,12 @@
       "serviceFee": 0,
       "shippingType": "th_cross"
     },
-    "lazada_ph": {
-      "name": "Lazada 菲律宾",
-      "commission": 6.0,
-      "fee": 2.0,
-      "serviceFee": 0,
-      "shippingType": "ph"
-    },
-    "tiktok_my": {
-      "name": "TikTok 马来西亚",
+    "tiktok_th": {
+      "name": "TikTok Shop 泰国",
       "commission": 5.0,
       "fee": 2.0,
       "serviceFee": 0,
-      "shippingType": "my"
+      "shippingType": "th_cross"
     }
   },
   "shipping": {
