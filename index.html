@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>泰越跨境定价计算器</title>
-  <meta name="description" content="Shopee / Lazada / TikTok · 泰国 & 越南 · 干线成本手动输入">
+  <meta name="description" content="Shopee / Lazada · 泰国 & 越南 · 支持干线算法或手动输入">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -57,9 +57,6 @@
       align-items: center;
       gap: 6px;
     }
-    .exchange-timestamp svg {
-      flex-shrink: 0;
-    }
     .subtitle {
       color: #666;
       margin-bottom: 25px;
@@ -72,12 +69,15 @@
       font-weight: 600;
       color: #444;
     }
-    input, select {
+    input[type="number"], select {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid #ddd;
       border-radius: 6px;
       font-size: 15px;
+    }
+    input[type="checkbox"] {
+      margin-right: 8px;
     }
     .note { 
       font-size: 13px; 
@@ -90,9 +90,6 @@
       margin-top: 8px;
       display: flex;
       align-items: center;
-    }
-    .exchange-note svg {
-      margin-right: 5px;
     }
 
     .currency-btn {
@@ -222,10 +219,10 @@
         <span>正在加载汇率…</span>
       </div>
 
-      <p class="subtitle">专注泰国 & 越南 · 干线成本请手动填写</p>
+      <p class="subtitle">支持手动输入 or 按重量自动计算干线成本</p>
 
       <div class="form-group">
-        <label for="site">选择平台与站点</label>
+        <label for="site">选择平台与物流方式</label>
         <select id="site" disabled>
           <option value="">加载中...</option>
         </select>
@@ -236,11 +233,26 @@
         <input type="number" id="cost" placeholder="例如：30.00" step="0.01" value="30">
       </div>
 
-      <!-- ✅ 新增：干线物流成本（手动输入） -->
+      <!-- 干线模式切换 -->
       <div class="form-group">
+        <label>
+          <input type="checkbox" id="useAlgorithm" onchange="toggleShippingMode()">
+          启用自动干线算法（按重量计算）
+        </label>
+      </div>
+
+      <!-- 手动输入（默认显示） -->
+      <div class="form-group" id="manualShippingGroup">
         <label>干线物流成本（元）</label>
         <input type="number" id="shipping" placeholder="例如：2.50" step="0.01" value="2.5">
         <div class="note">跨境头程 or 本土仓补货成本，请自行核算</div>
+      </div>
+
+      <!-- 算法模式（默认隐藏） -->
+      <div class="form-group" id="algorithmShippingGroup" style="display:none;">
+        <label>商品重量（克）</label>
+        <input type="number" id="weight" placeholder="例如：150" value="150" min="1">
+        <div class="note">系统将根据平台和重量自动匹配干线成本</div>
       </div>
 
       <div class="form-group">
@@ -269,8 +281,6 @@
           <div style="display: flex; gap: 4px;">
             <button type="button" class="currency-btn" data-currency="VND">VND</button>
             <button type="button" class="currency-btn" data-currency="THB">THB</button>
-            <button type="button" class="currency-btn" data-currency="PHP">PHP</button>
-            <button type="button" class="currency-btn" data-currency="MYR">MYR</button>
           </div>
         </div>
         <div class="exchange-note">
@@ -355,9 +365,72 @@
 
     const CURRENCY_SYMBOLS = {
       'VND': '₫',
-      'THB': '฿',
-      'PHP': '₱',
-      'MYR': 'RM'
+      'THB': '฿'
+    };
+
+    // 内嵌配置（无需外部 config.json）
+    const EMBEDDED_CONFIG = {
+      "platforms": {
+        "shopee_vn_cross": {
+          "name": "Shopee 越南（跨境）",
+          "commission": 15.33,
+          "fee": 4.91,
+          "serviceFee": 5.0
+        },
+        "shopee_th_cross": {
+          "name": "Shopee 泰国（跨境）",
+          "commission": 18.19,
+          "fee": 3.21,
+          "serviceFee": 5.35
+        },
+        "shopee_th_local": {
+          "name": "Shopee 泰国（本土）",
+          "commission": 8.56,
+          "fee": 3.21,
+          "serviceFee": 7.49
+        },
+        "lazada_vn": {
+          "name": "Lazada 越南",
+          "commission": 13.35,
+          "fee": 4.15,
+          "serviceFee": 0
+        },
+        "lazada_th_air": {
+          "name": "Lazada 泰国（空运）",
+          "commission": 11.24,
+          "fee": 3.21,
+          "serviceFee": 4.0
+        },
+        "lazada_th_sea": {
+          "name": "Lazada 泰国（海运）",
+          "commission": 13.59,
+          "fee": 3.21,
+          "serviceFee": 4.0
+        }
+      },
+      "shippingAlgorithms": {
+        "vn_cross": [
+          [30, 3.0],
+          [50, 3.5],
+          [100, 4.0],
+          [200, 5.0],
+          [300, 6.0],
+          [500, 7.5],
+          [1000, 10.0]
+        ],
+        "th_air": [
+          [100, 3.2],
+          [200, 4.5],
+          [500, 7.0],
+          [1000, 10.0]
+        ],
+        "th_sea": [
+          [500, 2.0],
+          [1000, 2.8],
+          [2000, 4.0],
+          [5000, 6.5]
+        ]
+      }
     };
 
     function formatTimestamp(date) {
@@ -397,9 +470,7 @@
 
     async function loadConfig() {
       try {
-        const res = await fetch('config.json?' + Date.now());
-        CONFIG = await res.json();
-        await loadExchangeRates();
+        CONFIG = EMBEDDED_CONFIG; // 直接使用内嵌配置
         
         const select = document.getElementById('site');
         select.innerHTML = '';
@@ -432,8 +503,10 @@
           });
         });
 
+        await loadExchangeRates();
+
       } catch (err) {
-        alert('❌ 无法加载 config.json');
+        alert('❌ 配置加载失败');
         console.error(err);
       }
     }
@@ -451,13 +524,50 @@
         updateExchangeBadge('VND', rate);
         updateExchangeTimestamp();
       } catch (err) {
-        console.warn('汇率API失败');
+        console.warn('汇率API失败，使用默认值');
         document.getElementById('exchangeRateInput').value = '3700';
         document.getElementById('exchangeRateInput').readOnly = false;
         updateExchangeBadge('VND', 3700);
         LAST_EXCHANGE_UPDATE = null;
         updateExchangeTimestamp();
       }
+    }
+
+    function toggleShippingMode() {
+      const useAlg = document.getElementById('useAlgorithm').checked;
+      const manualGroup = document.getElementById('manualShippingGroup');
+      const algoGroup = document.getElementById('algorithmShippingGroup');
+      
+      if (useAlg) {
+        manualGroup.style.display = 'none';
+        algoGroup.style.display = 'block';
+      } else {
+        manualGroup.style.display = 'block';
+        algoGroup.style.display = 'none';
+      }
+    }
+
+    function getShippingCostByAlgorithm(platformKey, weightGrams) {
+      let tierList = null;
+      
+      if (platformKey === 'shopee_vn_cross' || platformKey === 'lazada_vn') {
+        tierList = CONFIG.shippingAlgorithms.vn_cross;
+      } else if (platformKey === 'shopee_th_cross' || platformKey === 'lazada_th_air') {
+        tierList = CONFIG.shippingAlgorithms.th_air;
+      } else if (platformKey === 'lazada_th_sea') {
+        tierList = CONFIG.shippingAlgorithms.th_sea;
+      } else if (platformKey === 'shopee_th_local') {
+        tierList = CONFIG.shippingAlgorithms.th_sea; // 本土仓按海运算
+      }
+
+      if (!tierList || tierList.length === 0) return 0;
+
+      for (const [maxWeight, cost] of tierList) {
+        if (weightGrams <= maxWeight) {
+          return cost;
+        }
+      }
+      return tierList[tierList.length - 1][1]; // 超重取最高档
     }
 
     function calculate() {
@@ -477,12 +587,20 @@
       const exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 1;
       updateExchangeBadge(currencyCode, exchangeRate);
 
-      // ✅ 所有成本均来自用户输入
       const cost = parseFloat(document.getElementById('cost').value) || 0;
-      const shipping = parseFloat(document.getElementById('shipping').value) || 0; // 👈 手动输入
       const packaging = parseFloat(document.getElementById('packaging').value) || 0;
       const profitTarget = parseFloat(document.getElementById('profit').value) || 0;
       const marketing = parseFloat(document.getElementById('marketing').value) || 0;
+
+      // ✅ 干线成本：手动 or 算法
+      let shipping = 0;
+      const useAlgorithm = document.getElementById('useAlgorithm').checked;
+      if (useAlgorithm) {
+        const weight = parseFloat(document.getElementById('weight').value) || 100;
+        shipping = getShippingCostByAlgorithm(site, weight);
+      } else {
+        shipping = parseFloat(document.getElementById('shipping').value) || 0;
+      }
 
       const totalCost = cost + shipping + packaging + marketing;
       const totalRate = (commission + fee + serviceFee) / 100;
@@ -513,7 +631,7 @@
 
       document.getElementById('finalPriceRMB').textContent = finalRMB.toFixed(2) + ' 元';
       document.getElementById('cost-display').textContent = cost.toFixed(2) + ' 元';
-      document.getElementById('shipping-display').textContent = shipping.toFixed(2) + ' 元'; // 显示用户输入值
+      document.getElementById('shipping-display').textContent = shipping.toFixed(2) + ' 元';
       document.getElementById('packaging-display').textContent = packaging.toFixed(2) + ' 元';
       document.getElementById('marketing-display').textContent = marketing.toFixed(2) + ' 元';
       document.getElementById('commission-fee').textContent = commissionAmount.toFixed(2) + ' 元';
