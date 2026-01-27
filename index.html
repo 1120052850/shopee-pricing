@@ -6,6 +6,7 @@
     <title>东南亚电商定价计算器</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* 样式保持不变，与之前的代码相同 */
         * {
             margin: 0;
             padding: 0;
@@ -545,9 +546,45 @@
             color: #d32f2f;
             font-weight: 600;
         }
+        
+        /* 加载提示 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3949ab;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <!-- 加载提示 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>正在加载配置文件...</p>
+    </div>
+    
     <div class="container">
         <header>
             <div>
@@ -619,7 +656,7 @@
                 </button>
                 
                 <div class="fee-details" id="feeDetails">
-                    <h4><i class="fas fa-file-invoice-dollar"></i> 单件费用详情</h4>
+                    <h4><i class="fas fa-file-invoice-dollar"></i> 单件费用详情（本地货币）</h4>
                     <div class="fee-item">
                         <div class="fee-compact">
                             <span class="fee-name">交易手续费<span class="fee-percentage" id="transactionFeePercentage"> (4.91%)</span>：</span>
@@ -643,6 +680,20 @@
                     </div>
                     <div class="fee-item">
                         <div class="fee-compact">
+                            <span class="fee-name">超级联盟<span class="fee-percentage" id="superAlliancePercentage"> (1%)</span>：</span>
+                            <span class="fee-amount" id="superAllianceValue">800 VND</span>
+                        </div>
+                        <div class="fee-local" id="superAllianceLocal">≈ ¥0.22</div>
+                    </div>
+                    <div class="fee-item">
+                        <div class="fee-compact">
+                            <span class="fee-name">平台费：</span>
+                            <span class="fee-amount" id="platformFeeValue">13,800 VND</span>
+                        </div>
+                        <div class="fee-local" id="platformFeeLocal">≈ ¥3.73</div>
+                    </div>
+                    <div class="fee-item">
+                        <div class="fee-compact">
                             <span class="fee-name">仓储成本：</span>
                             <span class="fee-amount" id="storageCostValue">¥1.40</span>
                         </div>
@@ -662,10 +713,10 @@
                     </div>
                     <div class="fee-item">
                         <div class="fee-compact">
-                            <span class="fee-name">订单收入（本地）：</span>
-                            <span class="fee-amount" id="orderRevenueLocalValue">58,868 VND</span>
+                            <span class="fee-name">总收入（本地）：</span>
+                            <span class="fee-amount" id="totalRevenueLocalValue">58,868 VND</span>
                         </div>
-                        <div class="fee-local" id="orderRevenueLocal">≈ ¥15.91</div>
+                        <div class="fee-local" id="totalRevenueLocal">≈ ¥15.91</div>
                     </div>
                 </div>
             </div>
@@ -687,8 +738,7 @@
                                 <th>件数</th>
                                 <th>总售价</th>
                                 <th>干线运费 (RMB)</th>
-                                <th>订单收入 (本地)</th>
-                                <th>订单收入 (RMB)</th>
+                                <th>总收入 (RMB)</th>
                                 <th>总成本 (RMB)</th>
                                 <th>毛利 (RMB)</th>
                                 <th>毛利率</th>
@@ -696,7 +746,7 @@
                         </thead>
                         <tbody id="resultTable">
                             <tr>
-                                <td colspan="8" style="text-align: center; padding: 40px;">
+                                <td colspan="7" style="text-align: center; padding: 40px;">
                                     请设置参数并点击"计算利润"按钮
                                 </td>
                             </tr>
@@ -720,332 +770,31 @@
                 <button class="close-modal" id="closeSettingsBtn">&times;</button>
             </div>
             
-            <div class="settings-grid">
-                <div class="platform-group">
-                    <h3>通用费用设置</h3>
-                    <div class="setting-item">
-                        <label for="storageCostSetting">仓储成本 (RMB)</label>
-                        <input type="number" id="storageCostSetting" min="0" step="0.01" value="1.4">
-                    </div>
-                    <div class="setting-item">
-                        <label for="superAllianceRateSetting">超级联盟 (%)</label>
-                        <input type="number" id="superAllianceRateSetting" min="0" max="100" step="0.01" value="1">
-                    </div>
-                    <div class="setting-item">
-                        <label for="activityCommissionRateSetting">活动佣金 (%)</label>
-                        <input type="number" id="activityCommissionRateSetting" min="0" max="100" step="0.01" value="1">
-                    </div>
-                    <div class="setting-item">
-                        <label for="coinDeductionRateSetting">金币抵扣 (%)</label>
-                        <input type="number" id="coinDeductionRateSetting" min="0" max="100" step="0.01" value="1">
-                    </div>
-                </div>
-                
-                <div class="platform-group">
-                    <h3>Shopee 越南跨境</h3>
-                    <div class="setting-item">
-                        <label for="shopeeVnTransactionFee">交易手续费 (%)</label>
-                        <input type="number" id="shopeeVnTransactionFee" min="0" max="100" step="0.01" value="4.91">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeVnFcssFee">FCSS+CCB服务费 (%)</label>
-                        <input type="number" id="shopeeVnFcssFee" min="0" max="100" step="0.01" value="5">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeVnCommission">佣金 (%)</label>
-                        <input type="number" id="shopeeVnCommission" min="0" max="100" step="0.01" value="15.33">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeVnCoupon">优惠券 (%)</label>
-                        <input type="number" id="shopeeVnCoupon" min="0" max="100" step="0.01" value="0">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeVnBundle">套装&加购 (%)</label>
-                        <input type="number" id="shopeeVnBundle" min="0" max="100" step="0.01" value="2">
-                    </div>
-                </div>
-                
-                <div class="platform-group">
-                    <h3>Shopee 泰国跨境</h3>
-                    <div class="setting-item">
-                        <label for="shopeeThTransactionFee">交易手续费 (%)</label>
-                        <input type="number" id="shopeeThTransactionFee" min="0" max="100" step="0.01" value="3.21">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeThFcssFee">FCSS+CCB服务费 (%)</label>
-                        <input type="number" id="shopeeThFcssFee" min="0" max="100" step="0.01" value="5.35">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeThCommission">佣金 (%)</label>
-                        <input type="number" id="shopeeThCommission" min="0" max="100" step="0.01" value="18.19">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeThCoupon">优惠券 (%)</label>
-                        <input type="number" id="shopeeThCoupon" min="0" max="100" step="0.01" value="0">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeThBundle">套装&加购 (%)</label>
-                        <input type="number" id="shopeeThBundle" min="0" max="100" step="0.01" value="2">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeThShippingRate">干线运费 (RMB/g)</label>
-                        <input type="number" id="shopeeThShippingRate" min="0" step="0.0001" value="0.006">
-                    </div>
-                </div>
-                
-                <div class="platform-group">
-                    <h3>Shopee 泰国本土</h3>
-                    <div class="setting-item">
-                        <label for="shopeeThLocalTransactionFee">交易手续费 (%)</label>
-                        <input type="number" id="shopeeThLocalTransactionFee" min="0" max="100" step="0.01" value="3.21">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeThLocalFcssFee">FCSS+CCB服务费 (%)</label>
-                        <input type="number" id="shopeeThLocalFcssFee" min="0" max="100" step="0.01" value="7.49">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeThLocalCommission">佣金 (%)</label>
-                        <input type="number" id="shopeeThLocalCommission" min="0" max="100" step="0.01" value="8.56">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeThLocalCoupon">优惠券 (%)</label>
-                        <input type="number" id="shopeeThLocalCoupon" min="0" max="100" step="0.01" value="5">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeThLocalBundle">套装&加购 (%)</label>
-                        <input type="number" id="shopeeThLocalBundle" min="0" max="100" step="0.01" value="2">
-                    </div>
-                    <div class="setting-item">
-                        <label for="shopeeThLocalShippingRate">陆运干线 (RMB/g)</label>
-                        <input type="number" id="shopeeThLocalShippingRate" min="0" step="0.0001" value="0.0095">
-                    </div>
-                </div>
-                
-                <div class="platform-group">
-                    <h3>Lazada 越南跨境</h3>
-                    <div class="setting-item">
-                        <label for="lazadaVnTransactionFee">交易手续费 (%)</label>
-                        <input type="number" id="lazadaVnTransactionFee" min="0" max="100" step="0.01" value="4.15">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaVnFcssFee">FCSS+CCB服务费 (%)</label>
-                        <input type="number" id="lazadaVnFcssFee" min="0" max="100" step="0.01" value="0">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaVnCommission">佣金 (%)</label>
-                        <input type="number" id="lazadaVnCommission" min="0" max="100" step="0.01" value="13.35">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaVnCoupon">优惠券 (%)</label>
-                        <input type="number" id="lazadaVnCoupon" min="0" max="100" step="0.01" value="5">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaVnBundle">套装&加购 (%)</label>
-                        <input type="number" id="lazadaVnBundle" min="0" max="100" step="0.01" value="0">
-                    </div>
-                </div>
-                
-                <div class="platform-group">
-                    <h3>Lazada 泰国跨境</h3>
-                    <div class="setting-item">
-                        <label for="lazadaThTransactionFee">交易手续费 (%)</label>
-                        <input type="number" id="lazadaThTransactionFee" min="0" max="100" step="0.01" value="3.21">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaThFcssFee">FCSS+CCB服务费 (%)</label>
-                        <input type="number" id="lazadaThFcssFee" min="0" max="100" step="0.01" value="4">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaThCommission">佣金 (%)</label>
-                        <input type="number" id="lazadaThCommission" min="0" max="100" step="0.01" value="11.24">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaThCoupon">优惠券 (%)</label>
-                        <input type="number" id="lazadaThCoupon" min="0" max="100" step="0.01" value="5">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaThBundle">套装&加购 (%)</label>
-                        <input type="number" id="lazadaThBundle" min="0" max="100" step="0.01" value="0">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaThShippingRate">干线运费 (RMB/g)</label>
-                        <input type="number" id="lazadaThShippingRate" min="0" step="0.0001" value="0.025">
-                    </div>
-                </div>
-                
-                <div class="platform-group">
-                    <h3>Lazada 泰国海运</h3>
-                    <div class="setting-item">
-                        <label for="lazadaThSeaTransactionFee">交易手续费 (%)</label>
-                        <input type="number" id="lazadaThSeaTransactionFee" min="0" max="100" step="0.01" value="3.21">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaThSeaFcssFee">FCSS+CCB服务费 (%)</label>
-                        <input type="number" id="lazadaThSeaFcssFee" min="0" max="100" step="0.01" value="4">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaThSeaCommission">佣金 (%)</label>
-                        <input type="number" id="lazadaThSeaCommission" min="0" max="100" step="0.01" value="11.24">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaThSeaCoupon">优惠券 (%)</label>
-                        <input type="number" id="lazadaThSeaCoupon" min="0" max="100" step="0.01" value="5">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaThSeaBundle">套装&加购 (%)</label>
-                        <input type="number" id="lazadaThSeaBundle" min="0" max="100" step="0.01" value="0">
-                    </div>
-                    <div class="setting-item">
-                        <label for="lazadaThSeaShippingRate">海运干线 (RMB/g)</label>
-                        <input type="number" id="lazadaThSeaShippingRate" min="0" step="0.0001" value="0.006">
-                    </div>
+            <div class="settings-grid" id="settingsGrid">
+                <!-- 设置表单将通过JavaScript动态生成 -->
+                <div id="settingsPlaceholder">
+                    <p>正在加载设置...</p>
                 </div>
             </div>
             
             <div class="modal-actions">
                 <button class="btn btn-secondary" id="resetSettingsBtn">恢复默认</button>
                 <button class="btn btn-primary" id="saveSettingsBtn">保存设置</button>
+                <button class="btn btn-secondary" id="exportSettingsBtn">导出配置</button>
+                <button class="btn btn-secondary" id="importSettingsBtn">导入配置</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // 平台配置数据
-        const platformConfigs = {
-            'shopee-vn': {
-                name: 'Shopee越南跨境',
-                currency: 'VND',
-                defaultPrice: 80000,
-                defaultPurchase: 13,
-                defaultWeight: 100,
-                defaultExchange: 3700,
-                storageCost: 1.4,
-                transactionFeeRate: 0.0491,
-                fcssRate: 0.05,
-                commissionRate: 0.1533,
-                superAllianceRate: 0.01,
-                activityCommissionRate: 0.01,
-                coinDeductionRate: 0.01,
-                platformFee: 13800,
-                taxRate: 0.1,
-                couponRate: 0,
-                bundleRate: 0.02,
-                shippingRate: 'VLOOKUP查表',
-                shippingFormula: '根据重量查表（南宁仓价卡）',
-                shippingDescription: '越南跨境干线运费根据重量查表计算'
-            },
-            'shopee-th': {
-                name: 'Shopee泰国跨境',
-                currency: 'THB',
-                defaultPrice: 180,
-                defaultPurchase: 5.1,
-                defaultWeight: 150,
-                defaultExchange: 5,
-                storageCost: 1.4,
-                transactionFeeRate: 0.0321,
-                fcssRate: 0.0535,
-                commissionRate: 0.1819,
-                superAllianceRate: 0.01,
-                activityCommissionRate: 0.01,
-                coinDeductionRate: 0.01,
-                platformFee: 1.07,
-                taxRate: 0.07,
-                couponRate: 0,
-                bundleRate: 0.02,
-                shippingRate: 0.006,
-                shippingFormula: '重量 × 0.006 RMB/g',
-                shippingDescription: '泰国跨境空运干线'
-            },
-            'shopee-th-local': {
-                name: 'Shopee泰国本土',
-                currency: 'THB',
-                defaultPrice: 35,
-                defaultPurchase: 2.6,
-                defaultWeight: 50,
-                defaultExchange: 5,
-                storageCost: 1.7,
-                transactionFeeRate: 0.0321,
-                fcssRate: 0.0749,
-                commissionRate: 0.0856,
-                superAllianceRate: 0.01,
-                activityCommissionRate: 0.01,
-                coinDeductionRate: 0.01,
-                platformFee: 1.07,
-                taxRate: 0.07,
-                couponRate: 0.05,
-                bundleRate: 0.02,
-                shippingRate: 0.0095,
-                shippingFormula: '重量 × 0.0095 RMB/g',
-                shippingDescription: '泰国本土陆运干线'
-            },
-            'lazada-vn': {
-                name: 'Lazada越南跨境',
-                currency: 'VND',
-                defaultPrice: 78200,
-                defaultPurchase: 9,
-                defaultWeight: 250,
-                defaultExchange: 3700,
-                storageCost: 1.4,
-                transactionFeeRate: 0.0415,
-                fcssRate: 0,
-                commissionRate: 0.1335,
-                superAllianceRate: 0.01,
-                activityCommissionRate: 0.01,
-                coinDeductionRate: 0.01,
-                platformFee: 13800,
-                taxRate: 0,
-                couponRate: 0.05,
-                bundleRate: 0,
-                shippingRate: '按重量阶梯',
-                shippingFormula: '按重量阶梯收费',
-                shippingDescription: '越南跨境按重量阶梯计算运费'
-            },
-            'lazada-th': {
-                name: 'Lazada泰国跨境',
-                currency: 'THB',
-                defaultPrice: 64,
-                defaultPurchase: 7.1,
-                defaultWeight: 100,
-                defaultExchange: 5,
-                storageCost: 1.4,
-                transactionFeeRate: 0.0321,
-                fcssRate: 0.04,
-                commissionRate: 0.1124,
-                superAllianceRate: 0.01,
-                activityCommissionRate: 0.01,
-                coinDeductionRate: 0.01,
-                platformFee: 0,
-                taxRate: 0,
-                couponRate: 0.05,
-                bundleRate: 0,
-                shippingRate: 0.025,
-                shippingFormula: '重量 × 0.025 RMB/g',
-                shippingDescription: '泰国跨境空运干线'
-            },
-            'lazada-th-sea': {
-                name: 'Lazada泰国海运',
-                currency: 'THB',
-                defaultPrice: 75,
-                defaultPurchase: 6,
-                defaultWeight: 500,
-                defaultExchange: 5,
-                storageCost: 1.4,
-                transactionFeeRate: 0.0321,
-                fcssRate: 0.04,
-                commissionRate: 0.1124,
-                superAllianceRate: 0.01,
-                activityCommissionRate: 0.01,
-                coinDeductionRate: 0.01,
-                platformFee: 0,
-                taxRate: 0,
-                couponRate: 0.05,
-                bundleRate: 0,
-                shippingRate: 0.006,
-                shippingFormula: '重量 × 0.006 RMB/g',
-                shippingDescription: '泰国海运干线'
-            }
-        };
+    <!-- 文件导入输入 -->
+    <input type="file" id="configFileInput" accept=".json" style="display: none;">
 
+    <script>
+        // 平台配置数据 - 初始化为空，从JSON文件加载
+        let platformConfigs = {};
+        let currentConfig = {}; // 存储当前配置
+        let originalConfig = {}; // 存储原始配置（用于重置）
+        
         // 当前选择的平台
         let currentPlatform = 'shopee-vn';
         
@@ -1062,6 +811,7 @@
         const resultTable = document.getElementById('resultTable');
         const suggestedPriceEl = document.getElementById('suggestedPrice');
         const currencyUnitEl = document.getElementById('currencyUnit');
+        const loadingOverlay = document.getElementById('loadingOverlay');
         
         // 费用详情元素
         const transactionFeeValue = document.getElementById('transactionFeeValue');
@@ -1076,10 +826,17 @@
         const commissionLocal = document.getElementById('commissionLocal');
         const commissionPercentage = document.getElementById('commissionPercentage');
         
+        const superAllianceValue = document.getElementById('superAllianceValue');
+        const superAllianceLocal = document.getElementById('superAllianceLocal');
+        const superAlliancePercentage = document.getElementById('superAlliancePercentage');
+        
+        const platformFeeValue = document.getElementById('platformFeeValue');
+        const platformFeeLocal = document.getElementById('platformFeeLocal');
+        
         const storageCostValue = document.getElementById('storageCostValue');
         const shippingCostValue = document.getElementById('shippingCostValue');
-        const orderRevenueLocalValue = document.getElementById('orderRevenueLocalValue');
-        const orderRevenueLocal = document.getElementById('orderRevenueLocal');
+        const totalRevenueLocalValue = document.getElementById('totalRevenueLocalValue');
+        const totalRevenueLocal = document.getElementById('totalRevenueLocal');
         
         // 新增：干线运费参数显示元素
         const shippingParams = document.getElementById('shippingParams');
@@ -1091,12 +848,241 @@
         const settingsModal = document.getElementById('settingsModal');
         const saveSettingsBtn = document.getElementById('saveSettingsBtn');
         const resetSettingsBtn = document.getElementById('resetSettingsBtn');
+        const exportSettingsBtn = document.getElementById('exportSettingsBtn');
+        const importSettingsBtn = document.getElementById('importSettingsBtn');
+        const configFileInput = document.getElementById('configFileInput');
+        const settingsGrid = document.getElementById('settingsGrid');
+        const settingsPlaceholder = document.getElementById('settingsPlaceholder');
         
-        // 设置输入元素
-        const storageCostSetting = document.getElementById('storageCostSetting');
-        const superAllianceRateSetting = document.getElementById('superAllianceRateSetting');
-        const activityCommissionRateSetting = document.getElementById('activityCommissionRateSetting');
-        const coinDeductionRateSetting = document.getElementById('coinDeductionRateSetting');
+        // 默认配置（备用，当无法加载外部配置时使用）
+        const defaultConfig = {
+            platforms: {
+                'shopee-vn': {
+                    name: 'Shopee越南跨境',
+                    currency: 'VND',
+                    defaultPrice: 80000,
+                    defaultPurchase: 13,
+                    defaultWeight: 100,
+                    defaultExchange: 3700,
+                    storageCost: 1.4,
+                    transactionFeeRate: 0.0491,
+                    fcssRate: 0.05,
+                    commissionRate: 0.1533,
+                    superAllianceRate: 0.01,
+                    couponRate: 0,
+                    bundleRate: 0.02,
+                    platformFee: 13800,
+                    shippingRate: 0.008,
+                    shippingFormula: '重量 × 0.008 RMB/g',
+                    shippingDescription: '越南跨境干线运费简化计算'
+                },
+                'shopee-th': {
+                    name: 'Shopee泰国跨境',
+                    currency: 'THB',
+                    defaultPrice: 180,
+                    defaultPurchase: 5.1,
+                    defaultWeight: 150,
+                    defaultExchange: 5,
+                    storageCost: 1.4,
+                    transactionFeeRate: 0.0321,
+                    commissionRate: 0.1722,
+                    fcssRate: 0.05,
+                    superAllianceRate: 0.01,
+                    couponRate: 0,
+                    bundleRate: 0.02,
+                    platformFee: 1.07,
+                    shippingRate: 0.006,
+                    shippingFormula: '重量 × 0.006 RMB/g',
+                    shippingDescription: '泰国跨境空运干线'
+                },
+                'shopee-th-local': {
+                    name: 'Shopee泰国本土',
+                    currency: 'THB',
+                    defaultPrice: 35,
+                    defaultPurchase: 2.6,
+                    defaultWeight: 50,
+                    defaultExchange: 5,
+                    storageCost: 1.7,
+                    transactionFeeRate: 0.0321,
+                    fcssRate: 0.0749,
+                    commissionRate: 0.0856,
+                    superAllianceRate: 0.01,
+                    couponRate: 0.05,
+                    bundleRate: 0.02,
+                    platformFee: 1.07,
+                    shippingRate: 0.0095,
+                    shippingFormula: '重量 × 0.0095 RMB/g',
+                    shippingDescription: '泰国本土陆运干线'
+                },
+                'lazada-vn': {
+                    name: 'Lazada越南跨境',
+                    currency: 'VND',
+                    defaultPrice: 78200,
+                    defaultPurchase: 9,
+                    defaultWeight: 250,
+                    defaultExchange: 3700,
+                    storageCost: 1.4,
+                    transactionFeeRate: 0.0415,
+                    fcssRate: 0,
+                    commissionRate: 0.1335,
+                    superAllianceRate: 0.01,
+                    couponRate: 0.05,
+                    bundleRate: 0,
+                    platformFee: 13800,
+                    shippingRate: 0.008,
+                    shippingFormula: '按重量阶梯收费（简化）',
+                    shippingDescription: '越南跨境按重量阶梯计算运费'
+                },
+                'lazada-th': {
+                    name: 'Lazada泰国跨境',
+                    currency: 'THB',
+                    defaultPrice: 64,
+                    defaultPurchase: 7.1,
+                    defaultWeight: 100,
+                    defaultExchange: 5,
+                    storageCost: 1.4,
+                    transactionFeeRate: 0.0321,
+                    fcssRate: 0.04,
+                    commissionRate: 0.1124,
+                    superAllianceRate: 0.01,
+                    couponRate: 0.05,
+                    bundleRate: 0,
+                    platformFee: 0,
+                    shippingRate: 0.025,
+                    shippingFormula: '重量 × 0.025 RMB/g',
+                    shippingDescription: '泰国跨境空运干线'
+                },
+                'lazada-th-sea': {
+                    name: 'Lazada泰国海运',
+                    currency: 'THB',
+                    defaultPrice: 75,
+                    defaultPurchase: 6,
+                    defaultWeight: 500,
+                    defaultExchange: 5,
+                    storageCost: 1.4,
+                    transactionFeeRate: 0.0321,
+                    fcssRate: 0.04,
+                    commissionRate: 0.1124,
+                    superAllianceRate: 0.01,
+                    couponRate: 0.05,
+                    bundleRate: 0,
+                    platformFee: 0,
+                    shippingRate: 0.006,
+                    shippingFormula: '重量 × 0.006 RMB/g',
+                    shippingDescription: '泰国海运干线'
+                }
+            },
+            generalSettings: {
+                storageCost: 1.4,
+                superAllianceRate: 0.01,
+                activityCommissionRate: 0.01,
+                coinDeductionRate: 0.01
+            }
+        };
+        
+        // 加载配置文件
+        async function loadConfig() {
+            try {
+                // 尝试从config.json文件加载配置
+                const response = await fetch('config.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                currentConfig = await response.json();
+                console.log('配置文件加载成功');
+            } catch (error) {
+                console.warn('无法加载config.json文件，使用默认配置:', error);
+                // 使用默认配置
+                currentConfig = JSON.parse(JSON.stringify(defaultConfig));
+            }
+            
+            // 存储原始配置副本
+            originalConfig = JSON.parse(JSON.stringify(currentConfig));
+            
+            // 初始化平台配置
+            platformConfigs = currentConfig.platforms;
+            
+            // 隐藏加载提示
+            loadingOverlay.style.display = 'none';
+            
+            // 初始化页面
+            initPage();
+        }
+        
+        // 初始化页面
+        function initPage() {
+            // 初始化平台选项
+            initPlatformOptions();
+            
+            // 设置事件监听器
+            platformSelect.addEventListener('change', updatePlatformSelection);
+            siteSelect.addEventListener('change', updatePlatformSelection);
+            
+            // 计算按钮事件
+            calculateBtn.addEventListener('click', calculateAndDisplay);
+            
+            // 输入框变化时自动计算
+            [priceInput, purchasePriceInput, weightInput, exchangeRateInput, discountInput].forEach(input => {
+                input.addEventListener('input', calculateAndDisplay);
+            });
+            
+            // 设置模态框事件
+            openSettingsBtn.addEventListener('click', openSettingsModal);
+            closeSettingsBtn.addEventListener('click', () => {
+                settingsModal.style.display = 'none';
+            });
+            
+            // 点击模态框外部关闭
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target === settingsModal) {
+                    settingsModal.style.display = 'none';
+                }
+            });
+            
+            // 保存设置
+            saveSettingsBtn.addEventListener('click', saveSettings);
+            
+            // 重置设置
+            resetSettingsBtn.addEventListener('click', resetSettings);
+            
+            // 导出配置
+            exportSettingsBtn.addEventListener('click', exportConfig);
+            
+            // 导入配置
+            importSettingsBtn.addEventListener('click', () => {
+                configFileInput.click();
+            });
+            
+            // 文件导入处理
+            configFileInput.addEventListener('change', importConfig);
+            
+            // 初始计算
+            calculateAndDisplay();
+        }
+        
+        // 初始化 - 修复站点选项
+        function initPlatformOptions() {
+            // 清空站点选项
+            siteSelect.innerHTML = '';
+            
+            // 根据初始平台添加选项
+            if (platformSelect.value === 'shopee') {
+                siteSelect.innerHTML = `
+                    <option value="vn">越南跨境</option>
+                    <option value="th">泰国跨境</option>
+                    <option value="th-local">泰国本土</option>
+                `;
+            } else if (platformSelect.value === 'lazada') {
+                siteSelect.innerHTML = `
+                    <option value="vn">越南跨境</option>
+                    <option value="th">泰国跨境</option>
+                    <option value="th-sea">泰国海运</option>
+                `;
+            }
+            
+            // 初始化平台选择
+            updatePlatformSelection();
+        }
         
         // 平台选择变化事件
         function updatePlatformSelection() {
@@ -1154,73 +1140,6 @@
             modeInfo.innerHTML = info;
         }
         
-        // 平台选择变化事件监听
-        platformSelect.addEventListener('change', updatePlatformSelection);
-        siteSelect.addEventListener('change', updatePlatformSelection);
-        
-        // 计算按钮事件
-        calculateBtn.addEventListener('click', calculateAndDisplay);
-        
-        // 输入框变化时自动计算
-        [priceInput, purchasePriceInput, weightInput, exchangeRateInput, discountInput].forEach(input => {
-            input.addEventListener('input', calculateAndDisplay);
-        });
-        
-        // 设置模态框事件
-        openSettingsBtn.addEventListener('click', () => {
-            settingsModal.style.display = 'flex';
-        });
-        
-        closeSettingsBtn.addEventListener('click', () => {
-            settingsModal.style.display = 'none';
-        });
-        
-        // 点击模态框外部关闭
-        settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) {
-                settingsModal.style.display = 'none';
-            }
-        });
-        
-        // 保存设置
-        saveSettingsBtn.addEventListener('click', () => {
-            saveSettings();
-            settingsModal.style.display = 'none';
-            calculateAndDisplay();
-        });
-        
-        // 重置设置
-        resetSettingsBtn.addEventListener('click', resetSettings);
-        
-        // 初始化 - 修复站点选项
-        function initPlatformOptions() {
-            // 清空站点选项
-            siteSelect.innerHTML = '';
-            
-            // 根据初始平台添加选项
-            if (platformSelect.value === 'shopee') {
-                siteSelect.innerHTML = `
-                    <option value="vn">越南跨境</option>
-                    <option value="th">泰国跨境</option>
-                    <option value="th-local">泰国本土</option>
-                `;
-            } else if (platformSelect.value === 'lazada') {
-                siteSelect.innerHTML = `
-                    <option value="vn">越南跨境</option>
-                    <option value="th">泰国跨境</option>
-                    <option value="th-sea">泰国海运</option>
-                `;
-            }
-            
-            // 初始化平台选择
-            updatePlatformSelection();
-        }
-        
-        // 页面加载时初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            initPlatformOptions();
-        });
-        
         // 计算并显示结果
         function calculateAndDisplay() {
             const config = platformConfigs[currentPlatform];
@@ -1255,8 +1174,7 @@
                     <td>${quantity}</td>
                     <td>${formatNumber(result.totalPrice)} <span class="currency-symbol">${config.currency}</span></td>
                     <td>${formatCurrency(result.shippingCost)}</td>
-                    <td>${formatNumber(result.orderRevenueLocal)} <span class="currency-symbol">${config.currency}</span></td>
-                    <td>${formatCurrency(result.orderRevenueRMB)}</td>
+                    <td>${formatCurrency(result.totalRevenueRMB)}</td>
                     <td>${formatCurrency(result.totalCost)}</td>
                     <td class="${result.profit >= 0 ? 'profit-positive' : 'profit-negative'}">${formatCurrency(result.profit)}</td>
                     <td>${(result.profitRate * 100).toFixed(2)}%</td>
@@ -1283,55 +1201,42 @@
                 couponDiscount = price * config.couponRate;
             }
             
-            // 计算各项费用
-            const transactionFee = Math.round((price - couponDiscount - bundleDiscount) * config.transactionFeeRate);
-            const fcssFee = Math.round((price - couponDiscount - bundleDiscount) * config.fcssRate);
-            const commission = Math.round((price - couponDiscount - bundleDiscount) * config.commissionRate);
-            const superAlliance = Math.round((price - couponDiscount - bundleDiscount) * config.superAllianceRate);
+            // 计算基础（售价减去优惠券和套装加购）
+            const baseAmount = price - couponDiscount - bundleDiscount;
             
-            // 仓储成本
+            // 各项费用（按照Excel公式，四舍五入到整数）
+            const transactionFee = Math.round(baseAmount * config.transactionFeeRate);
+            const fcssFee = Math.round(baseAmount * config.fcssRate);
+            const commission = Math.round(baseAmount * config.commissionRate);
+            const superAlliance = Math.round(baseAmount * config.superAllianceRate);
+            
+            // 平台费
+            const platformFee = config.platformFee;
+            
+            // 仓储成本（RMB）
             const storageCost = config.storageCost;
             
-            // 干线运费
-            let shippingCost = 0;
-            let shippingRatePerGram = 0;
-            let shippingFormulaText = config.shippingFormula;
+            // 干线运费（RMB）
+            const shippingCost = weight * config.shippingRate;
             
-            if (config.name.includes('越南跨境')) {
-                // 越南干线运费根据重量查表
-                shippingCost = calculateVietnamShipping(weight, 1, exchangeRate);
-                shippingRatePerGram = shippingCost / weight;
-                shippingFormulaText = '根据重量查表（南宁仓价卡）';
-            } else if (config.name.includes('泰国跨境') || config.name.includes('泰国海运') || config.name.includes('泰国本土')) {
-                // 泰国跨境/海运/本土干线运费
-                shippingCost = weight * config.shippingRate;
-                shippingRatePerGram = config.shippingRate;
-            } else if (config.name.includes('Lazada越南跨境')) {
-                // Lazada越南跨境按重量阶梯
-                shippingCost = calculateLazadaVietnamShipping(weight, 1);
-                shippingRatePerGram = shippingCost / weight;
-                shippingFormulaText = '按重量阶梯收费';
-            }
+            // 计算总收入（本地货币）- 按照Excel公式
+            const totalRevenueLocal = price - transactionFee - fcssFee - commission - couponDiscount - bundleDiscount - superAlliance - platformFee;
             
-            // 计算订单收入（本地货币）
-            const orderRevenueLocal = price - couponDiscount - bundleDiscount - commission - fcssFee - transactionFee - superAlliance;
-            
-            // 订单收入（人民币）
-            const orderRevenueRMB = orderRevenueLocal / exchangeRate;
+            // 总收入（人民币）
+            const totalRevenueRMB = totalRevenueLocal / exchangeRate;
             
             return {
                 transactionFee,
                 fcssFee,
                 commission,
                 superAlliance,
+                platformFee,
                 storageCost,
                 shippingCost,
-                shippingRatePerGram,
-                shippingFormulaText,
-                orderRevenueLocal,
-                orderRevenueRMB,
                 couponDiscount,
-                bundleDiscount
+                bundleDiscount,
+                totalRevenueLocal,
+                totalRevenueRMB
             };
         }
         
@@ -1341,6 +1246,7 @@
             transactionFeePercentage.textContent = ` (${(config.transactionFeeRate * 100).toFixed(2)}%)`;
             fcssFeePercentage.textContent = ` (${(config.fcssRate * 100).toFixed(2)}%)`;
             commissionPercentage.textContent = ` (${(config.commissionRate * 100).toFixed(2)}%)`;
+            superAlliancePercentage.textContent = ` (${(config.superAllianceRate * 100).toFixed(2)}%)`;
             
             // 更新费用值显示
             transactionFeeValue.textContent = `${formatNumber(result.transactionFee)} ${config.currency}`;
@@ -1352,279 +1258,303 @@
             commissionValue.textContent = `${formatNumber(result.commission)} ${config.currency}`;
             commissionLocal.textContent = `≈ ${formatCurrency(result.commission / config.defaultExchange)}`;
             
+            superAllianceValue.textContent = `${formatNumber(result.superAlliance)} ${config.currency}`;
+            superAllianceLocal.textContent = `≈ ${formatCurrency(result.superAlliance / config.defaultExchange)}`;
+            
+            platformFeeValue.textContent = `${formatNumber(result.platformFee)} ${config.currency}`;
+            platformFeeLocal.textContent = `≈ ${formatCurrency(result.platformFee / config.defaultExchange)}`;
+            
             storageCostValue.textContent = `${formatCurrency(result.storageCost)}`;
             shippingCostValue.textContent = `${formatCurrency(result.shippingCost)}`;
             
             // 更新干线运费参数显示
-            let shippingParamsText = '';
+            const weight = parseFloat(weightInput.value);
+            const rate = config.shippingRate;
+            shippingParams.innerHTML = `参数：${weight}g × ¥${rate.toFixed(4)}/g = ${formatCurrency(result.shippingCost)}`;
+            shippingFormula.textContent = `公式：${config.shippingFormula}`;
             
-            if (config.name.includes('越南跨境') && config.platform === 'shopee') {
-                // Shopee越南跨境查表
-                shippingParamsText = `参数：${weightInput.value}g，根据重量查表`;
-            } else if (config.name.includes('泰国')) {
-                // 泰国各线路按克计算
-                const weight = parseFloat(weightInput.value);
-                const rate = typeof config.shippingRate === 'number' ? config.shippingRate : result.shippingRatePerGram;
-                shippingParamsText = `参数：${weight}g × ¥${rate.toFixed(4)}/g = ${formatCurrency(result.shippingCost)}`;
-            } else if (config.name.includes('Lazada越南跨境')) {
-                // Lazada越南跨境阶梯
-                shippingParamsText = `参数：${weightInput.value}g，按重量阶梯计算`;
-            }
-            
-            shippingParams.innerHTML = shippingParamsText;
-            shippingFormula.textContent = `公式：${result.shippingFormulaText}`;
-            
-            orderRevenueLocalValue.textContent = `${formatNumber(result.orderRevenueLocal)} ${config.currency}`;
-            orderRevenueLocal.textContent = `≈ ${formatCurrency(result.orderRevenueRMB)}`;
+            totalRevenueLocalValue.textContent = `${formatNumber(result.totalRevenueLocal)} ${config.currency}`;
+            totalRevenueLocal.textContent = `≈ ${formatCurrency(result.totalRevenueRMB)}`;
         }
         
         // 计算利润
         function calculateProfit(config, price, purchasePrice, weight, exchangeRate, discount, quantity) {
-            // 总售价
+            // 总售价（本地货币）
             const totalPrice = price * quantity;
             
-            // 采购成本
+            // 采购成本（RMB）
             const purchaseCost = purchasePrice * quantity;
             
-            // 仓储成本
-            let storageCost = config.storageCost;
+            // 仓储成本（RMB）
+            const storageCost = config.storageCost; // 固定值
             
-            // 干线运费
-            let shippingCost = 0;
+            // 干线运费（RMB）
+            const shippingCost = weight * quantity * config.shippingRate;
             
-            if (config.name.includes('越南跨境') && config.platform === 'shopee') {
-                // 越南干线运费根据重量查表
-                shippingCost = calculateVietnamShipping(weight, quantity, exchangeRate);
-            } else if (config.name.includes('泰国跨境') || config.name.includes('泰国海运') || config.name.includes('泰国本土')) {
-                // 泰国跨境/海运/本土干线运费
-                shippingCost = weight * quantity * config.shippingRate;
-            } else if (config.name.includes('Lazada越南跨境')) {
-                // Lazada越南跨境按重量阶梯
-                shippingCost = calculateLazadaVietnamShipping(weight, quantity);
-            }
-            
-            // 套装加购折扣（从第2件起）
+            // 套装加购（本地货币）- 第1件为0%，第2件起为2%
             let bundleDiscount = 0;
             if (quantity > 1) {
                 bundleDiscount = totalPrice * config.bundleRate;
             }
             
-            // 优惠券折扣
+            // 优惠券（本地货币）- 根据配置
             let couponDiscount = 0;
             if (config.couponRate) {
                 couponDiscount = totalPrice * config.couponRate;
             }
             
-            // 计算各项费用
-            const transactionFee = Math.round((totalPrice - couponDiscount - bundleDiscount) * config.transactionFeeRate);
-            const fcssFee = Math.round((totalPrice - couponDiscount - bundleDiscount) * config.fcssRate);
-            const commission = Math.round((totalPrice - couponDiscount - bundleDiscount) * config.commissionRate);
-            const superAlliance = Math.round((totalPrice - couponDiscount - bundleDiscount) * config.superAllianceRate);
-            const platformFee = config.platformFee;
+            // 计算基础（总售价减去优惠券和套装加购）
+            const baseAmount = totalPrice - couponDiscount - bundleDiscount;
             
-            // 计算订单收入（本地货币）
-            const orderRevenueLocal = totalPrice - couponDiscount - bundleDiscount - commission - fcssFee - transactionFee - superAlliance;
+            // 各项费用（本地货币）- 四舍五入到整数
+            const transactionFee = Math.round(baseAmount * config.transactionFeeRate);
+            const fcssFee = Math.round(baseAmount * config.fcssRate);
+            const commission = Math.round(baseAmount * config.commissionRate);
+            const superAlliance = Math.round(baseAmount * config.superAllianceRate);
             
-            // 订单收入（人民币）
-            const orderRevenueRMB = orderRevenueLocal / exchangeRate;
+            // 平台费（本地货币）
+            const platformFee = config.platformFee; // 注意：这里不乘以数量，平台费是固定值
             
-            // 总成本
+            // 总收入（本地货币）- 按照Excel公式
+            const totalRevenueLocal = totalPrice - transactionFee - fcssFee - commission - couponDiscount - bundleDiscount - superAlliance - platformFee;
+            
+            // 总收入（RMB）
+            const totalRevenueRMB = totalRevenueLocal / exchangeRate;
+            
+            // 总成本（RMB）- 按照Excel公式：L13 = C13+E13+H13
             const totalCost = purchaseCost + storageCost + shippingCost;
             
-            // 毛利
-            const profit = orderRevenueRMB - totalCost;
+            // 毛利（RMB）
+            const profit = totalRevenueRMB - totalCost;
             
             // 毛利率
-            const profitRate = orderRevenueRMB > 0 ? profit / orderRevenueRMB : 0;
+            const profitRate = totalRevenueRMB > 0 ? profit / totalRevenueRMB : 0;
             
             return {
                 totalPrice,
                 shippingCost,
-                orderRevenueLocal,
-                orderRevenueRMB,
+                totalRevenueRMB,
                 totalCost,
                 profit,
                 profitRate
             };
         }
         
-        // 计算越南干线运费（简化版）
-        function calculateVietnamShipping(weight, quantity, exchangeRate) {
-            // 实际总重量
-            const totalWeight = weight * quantity;
+        // 打开设置模态框
+        function openSettingsModal() {
+            // 清除之前的设置表单
+            settingsPlaceholder.style.display = 'none';
+            settingsGrid.innerHTML = '';
             
-            // 简化计算：根据重量区间估算（基于shopee越南南宁仓干线价卡）
-            let shippingVND = 0;
+            // 创建通用设置组
+            const generalGroup = document.createElement('div');
+            generalGroup.className = 'platform-group';
+            generalGroup.innerHTML = '<h3>通用费用设置</h3>';
             
-            if (totalWeight <= 100) {
-                shippingVND = 4400;
-            } else if (totalWeight <= 200) {
-                shippingVND = 10800;
-            } else if (totalWeight <= 300) {
-                shippingVND = 17200;
-            } else if (totalWeight <= 400) {
-                shippingVND = 19240;
-            } else if (totalWeight <= 500) {
-                shippingVND = 21280;
-            } else if (totalWeight <= 1000) {
-                shippingVND = 31480;
-            } else {
-                // 超过1000g的简化计算
-                shippingVND = 31480 + Math.ceil((totalWeight - 1000) / 1000) * 10000;
-            }
+            // 通用设置字段
+            const generalFields = [
+                { id: 'storageCostSetting', label: '仓储成本 (RMB)', value: currentConfig.generalSettings.storageCost },
+                { id: 'superAllianceRateSetting', label: '超级联盟 (%)', value: currentConfig.generalSettings.superAllianceRate * 100 },
+                { id: 'activityCommissionRateSetting', label: '活动佣金 (%)', value: currentConfig.generalSettings.activityCommissionRate * 100 },
+                { id: 'coinDeductionRateSetting', label: '金币抵扣 (%)', value: currentConfig.generalSettings.coinDeductionRate * 100 }
+            ];
             
-            // 转换为人民币
-            return shippingVND / exchangeRate;
-        }
-        
-        // 计算Lazada越南干线运费（按重量阶梯）
-        function calculateLazadaVietnamShipping(weight, quantity) {
-            const totalWeight = weight * quantity;
+            generalFields.forEach(field => {
+                const item = document.createElement('div');
+                item.className = 'setting-item';
+                item.innerHTML = `
+                    <label for="${field.id}">${field.label}</label>
+                    <input type="number" id="${field.id}" min="0" step="0.01" value="${field.value}">
+                `;
+                generalGroup.appendChild(item);
+            });
             
-            // Lazada越南跨境运费阶梯（简化版）
-            if (totalWeight <= 300) {
-                return 2.65;
-            } else if (totalWeight <= 1000) {
-                return 4.2;
-            } else {
-                return 4.7 + Math.max(0, Math.ceil((totalWeight - 1000) / 1000)) * 0.5;
-            }
+            settingsGrid.appendChild(generalGroup);
+            
+            // 为每个平台创建设置组
+            const platformGroups = {
+                'shopee-vn': 'Shopee 越南跨境',
+                'shopee-th': 'Shopee 泰国跨境',
+                'shopee-th-local': 'Shopee 泰国本土',
+                'lazada-vn': 'Lazada 越南跨境',
+                'lazada-th': 'Lazada 泰国跨境',
+                'lazada-th-sea': 'Lazada 泰国海运'
+            };
+            
+            Object.entries(platformGroups).forEach(([platformId, groupName]) => {
+                const config = platformConfigs[platformId];
+                if (!config) return;
+                
+                const group = document.createElement('div');
+                group.className = 'platform-group';
+                group.innerHTML = `<h3>${groupName}</h3>`;
+                
+                // 平台特定字段
+                const platformFields = [
+                    { id: `${platformId}_transactionFee`, label: '交易手续费 (%)', value: config.transactionFeeRate * 100 },
+                    { id: `${platformId}_fcssFee`, label: 'FCSS+CCB服务费 (%)', value: config.fcssRate * 100 },
+                    { id: `${platformId}_commission`, label: '佣金 (%)', value: config.commissionRate * 100 },
+                    { id: `${platformId}_coupon`, label: '优惠券 (%)', value: config.couponRate * 100 },
+                    { id: `${platformId}_bundle`, label: '套装&加购 (%)', value: config.bundleRate * 100 },
+                    { id: `${platformId}_platformFee`, label: `平台费 (${config.currency})`, value: config.platformFee },
+                    { id: `${platformId}_shippingRate`, label: '干线运费 (RMB/g)', value: config.shippingRate }
+                ];
+                
+                platformFields.forEach(field => {
+                    const item = document.createElement('div');
+                    item.className = 'setting-item';
+                    
+                    // 确定步长
+                    const step = field.label.includes('(%)') ? 0.01 : 
+                                 field.label.includes('(RMB/g)') ? 0.0001 : 0.01;
+                    
+                    item.innerHTML = `
+                        <label for="${field.id}">${field.label}</label>
+                        <input type="number" id="${field.id}" min="0" step="${step}" value="${field.value}">
+                    `;
+                    group.appendChild(item);
+                });
+                
+                settingsGrid.appendChild(group);
+            });
+            
+            // 显示模态框
+            settingsModal.style.display = 'flex';
         }
         
         // 保存设置
         function saveSettings() {
-            // 通用设置
-            const storageCost = parseFloat(storageCostSetting.value);
-            const superAllianceRate = parseFloat(superAllianceRateSetting.value) / 100;
-            const activityCommissionRate = parseFloat(activityCommissionRateSetting.value) / 100;
-            const coinDeductionRate = parseFloat(coinDeductionRateSetting.value) / 100;
+            // 保存通用设置
+            currentConfig.generalSettings.storageCost = parseFloat(document.getElementById('storageCostSetting').value);
+            currentConfig.generalSettings.superAllianceRate = parseFloat(document.getElementById('superAllianceRateSetting').value) / 100;
+            currentConfig.generalSettings.activityCommissionRate = parseFloat(document.getElementById('activityCommissionRateSetting').value) / 100;
+            currentConfig.generalSettings.coinDeductionRate = parseFloat(document.getElementById('coinDeductionRateSetting').value) / 100;
             
-            // 更新所有配置的通用设置
-            Object.keys(platformConfigs).forEach(key => {
-                platformConfigs[key].storageCost = storageCost;
-                platformConfigs[key].superAllianceRate = superAllianceRate;
-                platformConfigs[key].activityCommissionRate = activityCommissionRate;
-                platformConfigs[key].coinDeductionRate = coinDeductionRate;
+            // 保存每个平台的设置
+            Object.keys(platformConfigs).forEach(platformId => {
+                const config = platformConfigs[platformId];
+                
+                config.transactionFeeRate = parseFloat(document.getElementById(`${platformId}_transactionFee`).value) / 100;
+                config.fcssRate = parseFloat(document.getElementById(`${platformId}_fcssFee`).value) / 100;
+                config.commissionRate = parseFloat(document.getElementById(`${platformId}_commission`).value) / 100;
+                config.couponRate = parseFloat(document.getElementById(`${platformId}_coupon`).value) / 100;
+                config.bundleRate = parseFloat(document.getElementById(`${platformId}_bundle`).value) / 100;
+                config.platformFee = parseFloat(document.getElementById(`${platformId}_platformFee`).value);
+                config.shippingRate = parseFloat(document.getElementById(`${platformId}_shippingRate`).value);
+                
+                // 更新平台配置
+                platformConfigs[platformId] = config;
             });
             
-            // Shopee越南跨境
-            platformConfigs['shopee-vn'].transactionFeeRate = parseFloat(document.getElementById('shopeeVnTransactionFee').value) / 100;
-            platformConfigs['shopee-vn'].fcssRate = parseFloat(document.getElementById('shopeeVnFcssFee').value) / 100;
-            platformConfigs['shopee-vn'].commissionRate = parseFloat(document.getElementById('shopeeVnCommission').value) / 100;
-            platformConfigs['shopee-vn'].couponRate = parseFloat(document.getElementById('shopeeVnCoupon').value) / 100;
-            platformConfigs['shopee-vn'].bundleRate = parseFloat(document.getElementById('shopeeVnBundle').value) / 100;
-            
-            // Shopee泰国跨境
-            platformConfigs['shopee-th'].transactionFeeRate = parseFloat(document.getElementById('shopeeThTransactionFee').value) / 100;
-            platformConfigs['shopee-th'].fcssRate = parseFloat(document.getElementById('shopeeThFcssFee').value) / 100;
-            platformConfigs['shopee-th'].commissionRate = parseFloat(document.getElementById('shopeeThCommission').value) / 100;
-            platformConfigs['shopee-th'].couponRate = parseFloat(document.getElementById('shopeeThCoupon').value) / 100;
-            platformConfigs['shopee-th'].bundleRate = parseFloat(document.getElementById('shopeeThBundle').value) / 100;
-            platformConfigs['shopee-th'].shippingRate = parseFloat(document.getElementById('shopeeThShippingRate').value);
-            platformConfigs['shopee-th'].shippingFormula = `重量 × ${platformConfigs['shopee-th'].shippingRate} RMB/g`;
-            
-            // Shopee泰国本土
-            platformConfigs['shopee-th-local'].transactionFeeRate = parseFloat(document.getElementById('shopeeThLocalTransactionFee').value) / 100;
-            platformConfigs['shopee-th-local'].fcssRate = parseFloat(document.getElementById('shopeeThLocalFcssFee').value) / 100;
-            platformConfigs['shopee-th-local'].commissionRate = parseFloat(document.getElementById('shopeeThLocalCommission').value) / 100;
-            platformConfigs['shopee-th-local'].couponRate = parseFloat(document.getElementById('shopeeThLocalCoupon').value) / 100;
-            platformConfigs['shopee-th-local'].bundleRate = parseFloat(document.getElementById('shopeeThLocalBundle').value) / 100;
-            platformConfigs['shopee-th-local'].shippingRate = parseFloat(document.getElementById('shopeeThLocalShippingRate').value);
-            platformConfigs['shopee-th-local'].shippingFormula = `重量 × ${platformConfigs['shopee-th-local'].shippingRate} RMB/g`;
-            
-            // Lazada越南跨境
-            platformConfigs['lazada-vn'].transactionFeeRate = parseFloat(document.getElementById('lazadaVnTransactionFee').value) / 100;
-            platformConfigs['lazada-vn'].fcssRate = parseFloat(document.getElementById('lazadaVnFcssFee').value) / 100;
-            platformConfigs['lazada-vn'].commissionRate = parseFloat(document.getElementById('lazadaVnCommission').value) / 100;
-            platformConfigs['lazada-vn'].couponRate = parseFloat(document.getElementById('lazadaVnCoupon').value) / 100;
-            platformConfigs['lazada-vn'].bundleRate = parseFloat(document.getElementById('lazadaVnBundle').value) / 100;
-            
-            // Lazada泰国跨境
-            platformConfigs['lazada-th'].transactionFeeRate = parseFloat(document.getElementById('lazadaThTransactionFee').value) / 100;
-            platformConfigs['lazada-th'].fcssRate = parseFloat(document.getElementById('lazadaThFcssFee').value) / 100;
-            platformConfigs['lazada-th'].commissionRate = parseFloat(document.getElementById('lazadaThCommission').value) / 100;
-            platformConfigs['lazada-th'].couponRate = parseFloat(document.getElementById('lazadaThCoupon').value) / 100;
-            platformConfigs['lazada-th'].bundleRate = parseFloat(document.getElementById('lazadaThBundle').value) / 100;
-            platformConfigs['lazada-th'].shippingRate = parseFloat(document.getElementById('lazadaThShippingRate').value);
-            platformConfigs['lazada-th'].shippingFormula = `重量 × ${platformConfigs['lazada-th'].shippingRate} RMB/g`;
-            
-            // Lazada泰国海运
-            platformConfigs['lazada-th-sea'].transactionFeeRate = parseFloat(document.getElementById('lazadaThSeaTransactionFee').value) / 100;
-            platformConfigs['lazada-th-sea'].fcssRate = parseFloat(document.getElementById('lazadaThSeaFcssFee').value) / 100;
-            platformConfigs['lazada-th-sea'].commissionRate = parseFloat(document.getElementById('lazadaThSeaCommission').value) / 100;
-            platformConfigs['lazada-th-sea'].couponRate = parseFloat(document.getElementById('lazadaThSeaCoupon').value) / 100;
-            platformConfigs['lazada-th-sea'].bundleRate = parseFloat(document.getElementById('lazadaThSeaBundle').value) / 100;
-            platformConfigs['lazada-th-sea'].shippingRate = parseFloat(document.getElementById('lazadaThSeaShippingRate').value);
-            platformConfigs['lazada-th-sea'].shippingFormula = `重量 × ${platformConfigs['lazada-th-sea'].shippingRate} RMB/g`;
+            // 更新当前配置
+            currentConfig.platforms = platformConfigs;
             
             // 更新模式信息
             updateModeInfo(platformConfigs[currentPlatform]);
+            
+            // 重新计算
+            calculateAndDisplay();
+            
+            // 关闭模态框
+            settingsModal.style.display = 'none';
+            
+            // 显示成功消息
+            alert('设置已保存！');
         }
         
         // 重置设置
         function resetSettings() {
-            // 恢复默认设置
-            const defaultConfigs = JSON.parse(JSON.stringify(platformConfigs));
+            if (confirm('确定要恢复默认设置吗？这将丢失所有自定义设置。')) {
+                // 恢复为原始配置
+                currentConfig = JSON.parse(JSON.stringify(originalConfig));
+                platformConfigs = currentConfig.platforms;
+                
+                // 更新模式信息
+                updateModeInfo(platformConfigs[currentPlatform]);
+                
+                // 重新计算
+                calculateAndDisplay();
+                
+                // 关闭模态框
+                settingsModal.style.display = 'none';
+                
+                // 重新打开模态框以显示默认值
+                openSettingsModal();
+            }
+        }
+        
+        // 导出配置
+        function exportConfig() {
+            // 创建配置对象
+            const exportConfig = {
+                platforms: platformConfigs,
+                generalSettings: currentConfig.generalSettings
+            };
             
-            // 通用设置
-            storageCostSetting.value = 1.4;
-            superAllianceRateSetting.value = 1;
-            activityCommissionRateSetting.value = 1;
-            coinDeductionRateSetting.value = 1;
+            // 转换为JSON字符串
+            const jsonStr = JSON.stringify(exportConfig, null, 2);
             
-            // Shopee越南跨境
-            document.getElementById('shopeeVnTransactionFee').value = 4.91;
-            document.getElementById('shopeeVnFcssFee').value = 5;
-            document.getElementById('shopeeVnCommission').value = 15.33;
-            document.getElementById('shopeeVnCoupon').value = 0;
-            document.getElementById('shopeeVnBundle').value = 2;
+            // 创建Blob对象
+            const blob = new Blob([jsonStr], { type: 'application/json' });
             
-            // Shopee泰国跨境
-            document.getElementById('shopeeThTransactionFee').value = 3.21;
-            document.getElementById('shopeeThFcssFee').value = 5.35;
-            document.getElementById('shopeeThCommission').value = 18.19;
-            document.getElementById('shopeeThCoupon').value = 0;
-            document.getElementById('shopeeThBundle').value = 2;
-            document.getElementById('shopeeThShippingRate').value = 0.006;
+            // 创建下载链接
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ecommerce-calculator-config.json';
             
-            // Shopee泰国本土
-            document.getElementById('shopeeThLocalTransactionFee').value = 3.21;
-            document.getElementById('shopeeThLocalFcssFee').value = 7.49;
-            document.getElementById('shopeeThLocalCommission').value = 8.56;
-            document.getElementById('shopeeThLocalCoupon').value = 5;
-            document.getElementById('shopeeThLocalBundle').value = 2;
-            document.getElementById('shopeeThLocalShippingRate').value = 0.0095;
+            // 触发下载
+            document.body.appendChild(a);
+            a.click();
             
-            // Lazada越南跨境
-            document.getElementById('lazadaVnTransactionFee').value = 4.15;
-            document.getElementById('lazadaVnFcssFee').value = 0;
-            document.getElementById('lazadaVnCommission').value = 13.35;
-            document.getElementById('lazadaVnCoupon').value = 5;
-            document.getElementById('lazadaVnBundle').value = 0;
+            // 清理
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
             
-            // Lazada泰国跨境
-            document.getElementById('lazadaThTransactionFee').value = 3.21;
-            document.getElementById('lazadaThFcssFee').value = 4;
-            document.getElementById('lazadaThCommission').value = 11.24;
-            document.getElementById('lazadaThCoupon').value = 5;
-            document.getElementById('lazadaThBundle').value = 0;
-            document.getElementById('lazadaThShippingRate').value = 0.025;
+            alert('配置已导出为ecommerce-calculator-config.json文件');
+        }
+        
+        // 导入配置
+        function importConfig(event) {
+            const file = event.target.files[0];
+            if (!file) return;
             
-            // Lazada泰国海运
-            document.getElementById('lazadaThSeaTransactionFee').value = 3.21;
-            document.getElementById('lazadaThSeaFcssFee').value = 4;
-            document.getElementById('lazadaThSeaCommission').value = 11.24;
-            document.getElementById('lazadaThSeaCoupon').value = 5;
-            document.getElementById('lazadaThSeaBundle').value = 0;
-            document.getElementById('lazadaThSeaShippingRate').value = 0.006;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedConfig = JSON.parse(e.target.result);
+                    
+                    // 验证配置结构
+                    if (!importedConfig.platforms || !importedConfig.generalSettings) {
+                        throw new Error('配置文件格式不正确');
+                    }
+                    
+                    // 更新当前配置
+                    currentConfig = importedConfig;
+                    platformConfigs = currentConfig.platforms;
+                    
+                    // 更新模式信息
+                    updateModeInfo(platformConfigs[currentPlatform]);
+                    
+                    // 重新计算
+                    calculateAndDisplay();
+                    
+                    // 关闭模态框并重新打开以显示新值
+                    settingsModal.style.display = 'none';
+                    setTimeout(() => openSettingsModal(), 100);
+                    
+                    alert('配置导入成功！');
+                } catch (error) {
+                    alert('导入失败：' + error.message);
+                }
+                
+                // 清除文件输入
+                event.target.value = '';
+            };
             
-            // 恢复平台配置
-            Object.keys(platformConfigs).forEach(key => {
-                platformConfigs[key] = JSON.parse(JSON.stringify(defaultConfigs[key]));
-            });
-            
-            // 更新模式信息
-            updateModeInfo(platformConfigs[currentPlatform]);
+            reader.readAsText(file);
         }
         
         // 格式化货币（人民币）
@@ -1639,6 +1569,9 @@
                 maximumFractionDigits: 0
             });
         }
+        
+        // 页面加载时加载配置
+        window.addEventListener('DOMContentLoaded', loadConfig);
     </script>
 </body>
 </html>
