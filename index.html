@@ -76,19 +76,21 @@
         
         .input-section {
             flex: 1;
-            min-width: 350px;
+            min-width: 380px;
             padding: 30px;
             background-color: #f9fafc;
             border-right: 1px solid #eaeaea;
+            display: flex;
+            flex-direction: column;
         }
         
         .result-section {
             flex: 2;
-            min-width: 600px;
+            min-width: 700px;
             padding: 30px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 30px;
         }
         
         .section-title {
@@ -130,6 +132,7 @@
         
         .input-group {
             margin-bottom: 20px;
+            flex: 1;
         }
         
         .input-row {
@@ -240,7 +243,7 @@
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
             border-top: 4px solid #3949ab;
-            margin-bottom: 10px;
+            margin-top: 20px;
         }
         
         .suggested-price-card h3 {
@@ -320,8 +323,7 @@
             padding: 20px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             border-top: 4px solid #4caf50;
-            flex: 1;
-            min-height: 300px;
+            height: 100%;
             overflow-y: auto;
         }
         
@@ -584,18 +586,21 @@
         }
         
         /* 新增：右侧布局样式 */
-        .result-top-row {
+        .result-content {
             display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
+            flex-direction: column;
+            height: 100%;
+            gap: 30px;
         }
         
-        .result-top-left {
+        .result-top {
             flex: 1;
+            min-height: 300px;
         }
         
-        .result-top-right {
+        .result-bottom {
             flex: 1;
+            min-height: 300px;
         }
         
         @media (max-width: 1200px) {
@@ -681,24 +686,20 @@
                 <button class="calculate-btn" id="calculateBtn">
                     <i class="fas fa-calculator"></i> 计算利润
                 </button>
+                
+                <div class="suggested-price-card">
+                    <h3>建议上架价格</h3>
+                    <div class="value" id="suggestedPrice">133,333</div>
+                    <div class="unit" id="currencyUnit">VND</div>
+                    <div class="formula-note">公式：售价 / (1 - 折扣率) = 80,000 / (1 - 0.4) = 133,333 VND</div>
+                </div>
             </div>
             
             <div class="result-section">
-                <h2 class="section-title"><i class="fas fa-chart-line"></i> 利润计算结果</h2>
-                
-                <div class="result-top-row">
-                    <div class="result-top-left">
-                        <div class="suggested-price-card">
-                            <h3>建议上架价格</h3>
-                            <div class="value" id="suggestedPrice">133,333</div>
-                            <div class="unit" id="currencyUnit">VND</div>
-                            <div class="formula-note">公式：售价 / (1 - 折扣率) = 80,000 / (1 - 0.4) = 133,333 VND</div>
-                        </div>
-                    </div>
-                    
-                    <div class="result-top-right">
+                <div class="result-content">
+                    <div class="result-top">
+                        <h2 class="section-title"><i class="fas fa-file-invoice-dollar"></i> 单件费用详情（本地货币）</h2>
                         <div class="fee-details" id="feeDetails">
-                            <h4><i class="fas fa-file-invoice-dollar"></i> 单件费用详情（本地货币）</h4>
                             <div class="fee-item">
                                 <div class="fee-compact">
                                     <span class="fee-name">交易手续费<span class="fee-percentage" id="transactionFeePercentage"> (4.91%)</span>：</span>
@@ -762,31 +763,31 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div>
-                    <h3 class="section-title"><i class="fas fa-table"></i> 利润分析（1-5件）</h3>
-                    <div style="overflow-x: auto;">
-                        <table class="result-table">
-                            <thead>
-                                <tr>
-                                    <th>件数</th>
-                                    <th>总售价</th>
-                                    <th>干线运费 (RMB)</th>
-                                    <th>总收入 (RMB)</th>
-                                    <th>总成本 (RMB)</th>
-                                    <th>毛利 (RMB)</th>
-                                    <th>毛利率</th>
-                                </tr>
-                            </thead>
-                            <tbody id="resultTable">
-                                <tr>
-                                    <td colspan="7" style="text-align: center; padding: 40px;">
-                                        请设置参数并点击"计算利润"按钮
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    
+                    <div class="result-bottom">
+                        <h2 class="section-title"><i class="fas fa-table"></i> 利润分析（1-5件）</h2>
+                        <div style="overflow-x: auto;">
+                            <table class="result-table">
+                                <thead>
+                                    <tr>
+                                        <th>件数</th>
+                                        <th>总售价</th>
+                                        <th>干线运费 (RMB)</th>
+                                        <th>总收入 (RMB)</th>
+                                        <th>总成本 (RMB)</th>
+                                        <th>毛利 (RMB)</th>
+                                        <th>毛利率</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultTable">
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; padding: 40px;">
+                                            请设置参数并点击"计算利润"按钮
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
