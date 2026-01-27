@@ -1,30 +1,58 @@
 {
   "platforms": {
-    "shopee_vn": {
+    "shopee_vn_cross": {
       "name": "Shopee 越南（跨境）",
       "commission": 15.33,
       "fee": 4.91,
       "serviceFee": 5.0,
       "shippingType": "vn"
     },
-    "shopee_th": {
+    "shopee_vn_local": {
+      "name": "Shopee 越南（本土）",
+      "commission": 5.0,
+      "fee": 2.0,
+      "serviceFee": 0,
+      "shippingType": "vn_local"
+    },
+    "shopee_th_cross": {
       "name": "Shopee 泰国（跨境）",
       "commission": 18.19,
       "fee": 3.21,
       "serviceFee": 5.35,
       "shippingType": "th_cross"
     },
+    "shopee_th_local": {
+      "name": "Shopee 泰国（本土）",
+      "commission": 5.0,
+      "fee": 2.0,
+      "serviceFee": 0,
+      "shippingType": "th_local"
+    },
+    "lazada_vn": {
+      "name": "Lazada 越南",
+      "commission": 6.0,
+      "fee": 2.0,
+      "serviceFee": 0,
+      "shippingType": "vn"
+    },
+    "lazada_th": {
+      "name": "Lazada 泰国",
+      "commission": 6.0,
+      "fee": 2.0,
+      "serviceFee": 0,
+      "shippingType": "th_cross"
+    },
     "lazada_ph": {
       "name": "Lazada 菲律宾",
-      "commission": 6,
-      "fee": 2,
+      "commission": 6.0,
+      "fee": 2.0,
       "serviceFee": 0,
       "shippingType": "ph"
     },
     "tiktok_my": {
       "name": "TikTok 马来西亚",
-      "commission": 5,
-      "fee": 2,
+      "commission": 5.0,
+      "fee": 2.0,
       "serviceFee": 0,
       "shippingType": "my"
     }
