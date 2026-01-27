@@ -530,6 +530,21 @@
             font-size: 0.85rem;
             font-weight: normal;
         }
+        
+        /* 新增：运费参数显示 */
+        .shipping-params {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 4px;
+            padding-left: 10px;
+            border-left: 2px solid #ddd;
+        }
+        
+        .shipping-formula {
+            font-family: 'Courier New', monospace;
+            color: #d32f2f;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -562,6 +577,8 @@
                         <select id="siteSelect">
                             <option value="vn">越南跨境</option>
                             <option value="th">泰国跨境</option>
+                            <option value="th-local">泰国本土</option>
+                            <option value="th-sea">泰国海运</option>
                         </select>
                     </div>
                 </div>
@@ -634,6 +651,13 @@
                         <div class="fee-compact">
                             <span class="fee-name">干线运费：</span>
                             <span class="fee-amount" id="shippingCostValue">¥0.81</span>
+                        </div>
+                        <!-- 新增：干线运费参数显示 -->
+                        <div class="shipping-params" id="shippingParams">
+                            参数：100g × ¥0.0081/g = ¥0.81
+                            <div class="shipping-formula" id="shippingFormula">
+                                公式：weight × shippingRate
+                            </div>
                         </div>
                     </div>
                     <div class="fee-item">
@@ -907,7 +931,8 @@
                 couponRate: 0,
                 bundleRate: 0.02,
                 shippingRate: 'VLOOKUP查表',
-                shippingFormula: 'vlookup'
+                shippingFormula: '根据重量查表（南宁仓价卡）',
+                shippingDescription: '越南跨境干线运费根据重量查表计算'
             },
             'shopee-th': {
                 name: 'Shopee泰国跨境',
@@ -928,7 +953,8 @@
                 couponRate: 0,
                 bundleRate: 0.02,
                 shippingRate: 0.006,
-                shippingFormula: 'weight * 0.006'
+                shippingFormula: '重量 × 0.006 RMB/g',
+                shippingDescription: '泰国跨境空运干线'
             },
             'shopee-th-local': {
                 name: 'Shopee泰国本土',
@@ -949,7 +975,8 @@
                 couponRate: 0.05,
                 bundleRate: 0.02,
                 shippingRate: 0.0095,
-                shippingFormula: 'weight * 0.0095'
+                shippingFormula: '重量 × 0.0095 RMB/g',
+                shippingDescription: '泰国本土陆运干线'
             },
             'lazada-vn': {
                 name: 'Lazada越南跨境',
@@ -970,7 +997,8 @@
                 couponRate: 0.05,
                 bundleRate: 0,
                 shippingRate: '按重量阶梯',
-                shippingFormula: 'if(weight<=300,2.65,if(weight<=1000,4.2,4.7))'
+                shippingFormula: '按重量阶梯收费',
+                shippingDescription: '越南跨境按重量阶梯计算运费'
             },
             'lazada-th': {
                 name: 'Lazada泰国跨境',
@@ -991,7 +1019,8 @@
                 couponRate: 0.05,
                 bundleRate: 0,
                 shippingRate: 0.025,
-                shippingFormula: 'weight * 0.025'
+                shippingFormula: '重量 × 0.025 RMB/g',
+                shippingDescription: '泰国跨境空运干线'
             },
             'lazada-th-sea': {
                 name: 'Lazada泰国海运',
@@ -1012,7 +1041,8 @@
                 couponRate: 0.05,
                 bundleRate: 0,
                 shippingRate: 0.006,
-                shippingFormula: 'weight * 0.006'
+                shippingFormula: '重量 × 0.006 RMB/g',
+                shippingDescription: '泰国海运干线'
             }
         };
 
@@ -1051,6 +1081,10 @@
         const orderRevenueLocalValue = document.getElementById('orderRevenueLocalValue');
         const orderRevenueLocal = document.getElementById('orderRevenueLocal');
         
+        // 新增：干线运费参数显示元素
+        const shippingParams = document.getElementById('shippingParams');
+        const shippingFormula = document.getElementById('shippingFormula');
+        
         // 设置模态框元素
         const openSettingsBtn = document.getElementById('openSettingsBtn');
         const closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -1073,12 +1107,16 @@
             if (platform === 'shopee') {
                 if (site === 'th-local') {
                     currentPlatform = 'shopee-th-local';
+                } else if (site === 'th-sea') {
+                    currentPlatform = 'shopee-th';
                 } else {
                     currentPlatform = `shopee-${site}`;
                 }
             } else if (platform === 'lazada') {
                 if (site === 'th-sea') {
                     currentPlatform = 'lazada-th-sea';
+                } else if (site === 'th-local') {
+                    currentPlatform = 'lazada-th';
                 } else {
                     currentPlatform = `lazada-${site}`;
                 }
@@ -1105,6 +1143,13 @@
             info += `佣金: ${(config.commissionRate * 100).toFixed(2)}% | `;
             info += `交易费: ${(config.transactionFeeRate * 100).toFixed(2)}% | `;
             info += `FCSS+CCB: ${(config.fcssRate * 100).toFixed(2)}%`;
+            
+            // 添加干线运费信息
+            if (typeof config.shippingRate === 'number') {
+                info += ` | 干线运费: ${config.shippingRate} RMB/g`;
+            } else {
+                info += ` | 干线运费: ${config.shippingRate}`;
+            }
             
             modeInfo.innerHTML = info;
         }
@@ -1249,19 +1294,26 @@
             
             // 干线运费
             let shippingCost = 0;
+            let shippingRatePerGram = 0;
+            let shippingFormulaText = config.shippingFormula;
+            
             if (config.name.includes('越南跨境')) {
                 // 越南干线运费根据重量查表
                 shippingCost = calculateVietnamShipping(weight, 1, exchangeRate);
-            } else if (config.name.includes('泰国跨境') || config.name.includes('泰国海运')) {
-                // 泰国跨境/海运干线运费
+                shippingRatePerGram = shippingCost / weight;
+                shippingFormulaText = '根据重量查表（南宁仓价卡）';
+            } else if (config.name.includes('泰国跨境') || config.name.includes('泰国海运') || config.name.includes('泰国本土')) {
+                // 泰国跨境/海运/本土干线运费
                 shippingCost = weight * config.shippingRate;
-            } else if (config.name.includes('泰国本土')) {
-                // 泰国本土陆运干线
-                shippingCost = weight * config.shippingRate;
+                shippingRatePerGram = config.shippingRate;
+            } else if (config.name.includes('Lazada越南跨境')) {
+                // Lazada越南跨境按重量阶梯
+                shippingCost = calculateLazadaVietnamShipping(weight, 1);
+                shippingRatePerGram = shippingCost / weight;
+                shippingFormulaText = '按重量阶梯收费';
             }
             
             // 计算订单收入（本地货币）
-            // 根据Excel公式：订单收入 = 售价 - 优惠券 - 套装加购 - 佣金 - FCSS - 交易手续费 - 超级联盟
             const orderRevenueLocal = price - couponDiscount - bundleDiscount - commission - fcssFee - transactionFee - superAlliance;
             
             // 订单收入（人民币）
@@ -1274,6 +1326,8 @@
                 superAlliance,
                 storageCost,
                 shippingCost,
+                shippingRatePerGram,
+                shippingFormulaText,
                 orderRevenueLocal,
                 orderRevenueRMB,
                 couponDiscount,
@@ -1301,6 +1355,25 @@
             storageCostValue.textContent = `${formatCurrency(result.storageCost)}`;
             shippingCostValue.textContent = `${formatCurrency(result.shippingCost)}`;
             
+            // 更新干线运费参数显示
+            let shippingParamsText = '';
+            
+            if (config.name.includes('越南跨境') && config.platform === 'shopee') {
+                // Shopee越南跨境查表
+                shippingParamsText = `参数：${weightInput.value}g，根据重量查表`;
+            } else if (config.name.includes('泰国')) {
+                // 泰国各线路按克计算
+                const weight = parseFloat(weightInput.value);
+                const rate = typeof config.shippingRate === 'number' ? config.shippingRate : result.shippingRatePerGram;
+                shippingParamsText = `参数：${weight}g × ¥${rate.toFixed(4)}/g = ${formatCurrency(result.shippingCost)}`;
+            } else if (config.name.includes('Lazada越南跨境')) {
+                // Lazada越南跨境阶梯
+                shippingParamsText = `参数：${weightInput.value}g，按重量阶梯计算`;
+            }
+            
+            shippingParams.innerHTML = shippingParamsText;
+            shippingFormula.textContent = `公式：${result.shippingFormulaText}`;
+            
             orderRevenueLocalValue.textContent = `${formatNumber(result.orderRevenueLocal)} ${config.currency}`;
             orderRevenueLocal.textContent = `≈ ${formatCurrency(result.orderRevenueRMB)}`;
         }
@@ -1319,15 +1392,15 @@
             // 干线运费
             let shippingCost = 0;
             
-            if (config.name.includes('越南跨境')) {
+            if (config.name.includes('越南跨境') && config.platform === 'shopee') {
                 // 越南干线运费根据重量查表
                 shippingCost = calculateVietnamShipping(weight, quantity, exchangeRate);
-            } else if (config.name.includes('泰国跨境') || config.name.includes('泰国海运')) {
-                // 泰国跨境/海运干线运费
+            } else if (config.name.includes('泰国跨境') || config.name.includes('泰国海运') || config.name.includes('泰国本土')) {
+                // 泰国跨境/海运/本土干线运费
                 shippingCost = weight * quantity * config.shippingRate;
-            } else if (config.name.includes('泰国本土')) {
-                // 泰国本土陆运干线
-                shippingCost = weight * quantity * config.shippingRate;
+            } else if (config.name.includes('Lazada越南跨境')) {
+                // Lazada越南跨境按重量阶梯
+                shippingCost = calculateLazadaVietnamShipping(weight, quantity);
             }
             
             // 套装加购折扣（从第2件起）
@@ -1404,6 +1477,20 @@
             return shippingVND / exchangeRate;
         }
         
+        // 计算Lazada越南干线运费（按重量阶梯）
+        function calculateLazadaVietnamShipping(weight, quantity) {
+            const totalWeight = weight * quantity;
+            
+            // Lazada越南跨境运费阶梯（简化版）
+            if (totalWeight <= 300) {
+                return 2.65;
+            } else if (totalWeight <= 1000) {
+                return 4.2;
+            } else {
+                return 4.7 + Math.max(0, Math.ceil((totalWeight - 1000) / 1000)) * 0.5;
+            }
+        }
+        
         // 保存设置
         function saveSettings() {
             // 通用设置
@@ -1434,6 +1521,7 @@
             platformConfigs['shopee-th'].couponRate = parseFloat(document.getElementById('shopeeThCoupon').value) / 100;
             platformConfigs['shopee-th'].bundleRate = parseFloat(document.getElementById('shopeeThBundle').value) / 100;
             platformConfigs['shopee-th'].shippingRate = parseFloat(document.getElementById('shopeeThShippingRate').value);
+            platformConfigs['shopee-th'].shippingFormula = `重量 × ${platformConfigs['shopee-th'].shippingRate} RMB/g`;
             
             // Shopee泰国本土
             platformConfigs['shopee-th-local'].transactionFeeRate = parseFloat(document.getElementById('shopeeThLocalTransactionFee').value) / 100;
@@ -1442,6 +1530,7 @@
             platformConfigs['shopee-th-local'].couponRate = parseFloat(document.getElementById('shopeeThLocalCoupon').value) / 100;
             platformConfigs['shopee-th-local'].bundleRate = parseFloat(document.getElementById('shopeeThLocalBundle').value) / 100;
             platformConfigs['shopee-th-local'].shippingRate = parseFloat(document.getElementById('shopeeThLocalShippingRate').value);
+            platformConfigs['shopee-th-local'].shippingFormula = `重量 × ${platformConfigs['shopee-th-local'].shippingRate} RMB/g`;
             
             // Lazada越南跨境
             platformConfigs['lazada-vn'].transactionFeeRate = parseFloat(document.getElementById('lazadaVnTransactionFee').value) / 100;
@@ -1457,6 +1546,7 @@
             platformConfigs['lazada-th'].couponRate = parseFloat(document.getElementById('lazadaThCoupon').value) / 100;
             platformConfigs['lazada-th'].bundleRate = parseFloat(document.getElementById('lazadaThBundle').value) / 100;
             platformConfigs['lazada-th'].shippingRate = parseFloat(document.getElementById('lazadaThShippingRate').value);
+            platformConfigs['lazada-th'].shippingFormula = `重量 × ${platformConfigs['lazada-th'].shippingRate} RMB/g`;
             
             // Lazada泰国海运
             platformConfigs['lazada-th-sea'].transactionFeeRate = parseFloat(document.getElementById('lazadaThSeaTransactionFee').value) / 100;
@@ -1465,6 +1555,7 @@
             platformConfigs['lazada-th-sea'].couponRate = parseFloat(document.getElementById('lazadaThSeaCoupon').value) / 100;
             platformConfigs['lazada-th-sea'].bundleRate = parseFloat(document.getElementById('lazadaThSeaBundle').value) / 100;
             platformConfigs['lazada-th-sea'].shippingRate = parseFloat(document.getElementById('lazadaThSeaShippingRate').value);
+            platformConfigs['lazada-th-sea'].shippingFormula = `重量 × ${platformConfigs['lazada-th-sea'].shippingRate} RMB/g`;
             
             // 更新模式信息
             updateModeInfo(platformConfigs[currentPlatform]);
