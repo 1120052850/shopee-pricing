@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>东南亚跨境定价计算器</title>
-  <meta name="description" content="参数可配置 · 支持 Shopee / Lazada / TikTok">
+  <title>东南亚跨境定价计算器 - 专业版</title>
+  <meta name="description" content="Shopee/Lazada/TikTok 定价工具 · 9项明细数据">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -71,31 +71,68 @@
       cursor: not-allowed;
     }
 
+    /* 右侧结果区 */
     .result-panel {
       flex: 0 0 40%;
-      padding: 30px;
+      padding: 20px;
       background: #fafafa;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      overflow-y: auto;
     }
     .result-placeholder {
       text-align: center;
       color: #999;
-      padding: 20px;
+      padding: 40px 20px;
     }
     .result-box {
       background: white;
       border-radius: 10px;
-      padding: 25px;
+      padding: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border-left: 4px solid #ee4d2d;
     }
-    .result-item { margin-bottom: 15px; }
-    .result-label { font-size: 14px; color: #666; margin-bottom: 4px; }
-    .result-value { font-size: 18px; font-weight: bold; color: #333; }
-    .final-price { font-size: 24px; color: #e74c3c; margin: 10px 0; }
-    .local-price { font-size: 20px; color: #2c3e50; font-weight: bold; }
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 15px 0 10px 0;
+      padding-bottom: 5px;
+      border-bottom: 1px dashed #eee;
+      color: #555;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+    }
+    .detail-label {
+      color: #666;
+    }
+    .detail-value {
+      font-weight: 500;
+      color: #333;
+    }
+    .highlight-row {
+      font-weight: bold;
+      color: #e74c3c;
+      font-size: 16px;
+      margin: 8px 0;
+    }
+    .final-price {
+      font-size: 24px;
+      color: #e74c3c;
+      text-align: center;
+      margin: 15px 0;
+      padding: 10px 0;
+      border-top: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .local-price {
+      text-align: center;
+      font-size: 20px;
+      color: #2c3e50;
+      font-weight: bold;
+      margin: 10px 0;
+    }
 
     @media (max-width: 768px) {
       .container { flex-direction: column; min-height: auto; }
@@ -106,9 +143,10 @@
 </head>
 <body>
   <div class="container">
+    <!-- 左侧：输入 -->
     <div class="input-panel">
-      <h1>🌍 东南亚跨境定价计算器</h1>
-      <p class="subtitle">参数由 config.json 动态加载 · 可随时修改</p>
+      <h1>🌍 东南亚跨境定价计算器 - 专业版</h1>
+      <p class="subtitle">支持 Shopee / Lazada / TikTok · 9项利润明细</p>
 
       <div class="form-group">
         <label for="site">选择平台与站点</label>
@@ -125,7 +163,7 @@
       <div class="form-group">
         <label>商品重量（克）</label>
         <input type="number" id="weight" placeholder="例如：150" value="150" min="1">
-        <div class="note">自动计算干线物流</div>
+        <div class="note">自动计算干线物流（基于南宁仓价卡）</div>
       </div>
 
       <div class="form-group">
@@ -158,30 +196,59 @@
       <button id="calcBtn" onclick="calculate()" disabled>🚀 立即计算建议售价</button>
     </div>
 
+    <!-- 右侧：结果 -->
     <div class="result-panel">
       <div id="result-placeholder" class="result-placeholder">
-        <p>填写左侧参数<br>点击“立即计算”<br>查看定价建议</p>
+        <p>填写左侧参数<br>点击“立即计算”<br>查看完整利润分析</p>
       </div>
       <div id="result-box" class="result-box" style="display:none;">
-        <div class="result-item">
-          <div class="result-label">📦 总成本</div>
-          <div class="result-value" id="totalCost">—</div>
+        <div class="final-price" id="finalPriceRMB">— 元</div>
+        <div class="local-price" id="localPrice">—</div>
+
+        <div class="section-title">📦 成本构成</div>
+        <div class="detail-row">
+          <span class="detail-label">采购成本</span>
+          <span class="detail-value" id="cost-display">—</span>
         </div>
-        <div class="result-item">
-          <div class="result-label">🎯 目标净收入</div>
-          <div class="result-value" id="targetNet">—</div>
+        <div class="detail-row">
+          <span class="detail-label">干线物流</span>
+          <span class="detail-value" id="shipping-display">—</span>
         </div>
-        <div class="result-item">
-          <div class="result-label">💡 建议上架价（人民币）</div>
-          <div class="final-price" id="finalPriceRMB">—</div>
+        <div class="detail-row">
+          <span class="detail-label">包装成本</span>
+          <span class="detail-value" id="packaging-display">—</span>
         </div>
-        <div class="result-item">
-          <div class="result-label">🌍 本地货币建议价</div>
-          <div class="local-price" id="localPrice">—</div>
+        <div class="detail-row">
+          <span class="detail-label">营销费用</span>
+          <span class="detail-value" id="marketing-display">—</span>
         </div>
-        <div style="margin-top:20px; font-size:13px; color:#777;">
-          ✅ 已含：平台费 + 干线物流<br>
-          💡 价格已优化为 .99 结尾
+
+        <div class="section-title">💳 平台费用（基于售价）</div>
+        <div class="detail-row">
+          <span class="detail-label">平台佣金</span>
+          <span class="detail-value" id="commission-fee">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">交易手续费</span>
+          <span class="detail-value" id="transaction-fee">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">服务费</span>
+          <span class="detail-value" id="service-fee">—</span>
+        </div>
+
+        <div class="section-title">📊 利润分析</div>
+        <div class="detail-row">
+          <span class="detail-label">总成本</span>
+          <span class="detail-value" id="total-cost-display">—</span>
+        </div>
+        <div class="detail-row highlight-row">
+          <span>预估利润</span>
+          <span id="profit-amount">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">利润率</span>
+          <span class="detail-value" id="profit-margin">—</span>
         </div>
       </div>
     </div>
@@ -193,10 +260,9 @@
     // 加载配置
     async function loadConfig() {
       try {
-        const res = await fetch('config.json?' + Date.now()); // 防缓存
+        const res = await fetch('config.json?' + Date.now());
         CONFIG = await res.json();
         
-        // 渲染下拉菜单
         const select = document.getElementById('site');
         select.innerHTML = '';
         Object.entries(CONFIG.platforms).forEach(([key, plat]) => {
@@ -264,29 +330,53 @@
 
       const cost = parseFloat(document.getElementById('cost').value) || 0;
       const packaging = parseFloat(document.getElementById('packaging').value) || 0;
-      const profit = parseFloat(document.getElementById('profit').value) || 0;
+      const profitTarget = parseFloat(document.getElementById('profit').value) || 0;
       const marketing = parseFloat(document.getElementById('marketing').value) || 0;
 
-      const totalCost = cost + shippingRMB + packaging;
-      const targetNet = totalCost * (1 + profit / 100);
-      let finalRMB = (targetNet + marketing) / (1 - totalRate);
+      const totalCost = cost + shippingRMB + packaging + marketing;
+      const targetNet = totalCost * (1 + profitTarget / 100);
+      let finalRMB = (targetNet) / (1 - totalRate);
       finalRMB = Math.ceil(finalRMB) - 0.01;
       if (finalRMB < 0) finalRMB = 0;
 
+      // 计算各项费用（基于最终售价）
+      const commissionAmount = finalRMB * (commission / 100);
+      const feeAmount = finalRMB * (fee / 100);
+      const serviceAmount = finalRMB * (serviceFee / 100);
+      const totalPlatformFee = commissionAmount + feeAmount + serviceAmount;
+      const actualProfit = finalRMB - totalPlatformFee - totalCost;
+      const profitMargin = (actualProfit / finalRMB * 100).toFixed(1);
+
+      // 本地货币
       const localVal = finalRMB * exchangeRate;
       const currency = site.includes('vn') ? 'VND' : 'THB';
       const localStr = currency === 'VND' ? Math.round(localVal).toLocaleString() : localVal.toFixed(0);
 
-      document.getElementById('totalCost').textContent = totalCost.toFixed(2) + ' 元';
-      document.getElementById('targetNet').textContent = targetNet.toFixed(2) + ' 元';
+      // 更新界面
       document.getElementById('finalPriceRMB').textContent = finalRMB.toFixed(2) + ' 元';
       document.getElementById('localPrice').textContent = ` $ {localStr}  $ {currency}`;
 
+      // 成本构成
+      document.getElementById('cost-display').textContent = cost.toFixed(2) + ' 元';
+      document.getElementById('shipping-display').textContent = shippingRMB.toFixed(2) + ' 元';
+      document.getElementById('packaging-display').textContent = packaging.toFixed(2) + ' 元';
+      document.getElementById('marketing-display').textContent = marketing.toFixed(2) + ' 元';
+
+      // 平台费用
+      document.getElementById('commission-fee').textContent = commissionAmount.toFixed(2) + ' 元';
+      document.getElementById('transaction-fee').textContent = feeAmount.toFixed(2) + ' 元';
+      document.getElementById('service-fee').textContent = serviceAmount.toFixed(2) + ' 元';
+
+      // 利润分析
+      document.getElementById('total-cost-display').textContent = totalCost.toFixed(2) + ' 元';
+      document.getElementById('profit-amount').textContent = actualProfit.toFixed(2) + ' 元';
+      document.getElementById('profit-margin').textContent = profitMargin + '%';
+
+      // 显示结果
       document.getElementById('result-placeholder').style.display = 'none';
       document.getElementById('result-box').style.display = 'block';
     }
 
-    // 启动
     loadConfig();
   </script>
 </body>
