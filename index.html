@@ -368,10 +368,10 @@
     // 更新顶部汇率徽章
     function updateExchangeBadge(currency, rate) {
       const symbol = CURRENCY_SYMBOLS[currency] || currency;
-      document.getElementById('live-exchange-badge').innerHTML = `
-        <span class="currency-icon"> $ {symbol}</span>
-        <span>CNY ≈  $ {rate.toFixed(2)}  $ {currency}</span>
-      `;
+      const html =
+        '<span class="currency-icon">' + symbol + '</span>' +
+        '<span>CNY ≈ ' + rate.toFixed(2) + ' ' + currency + '</span>';
+      document.getElementById('live-exchange-badge').innerHTML = html;
     }
 
     // 平台切换时更新汇率
@@ -498,3 +498,4 @@
   </script>
 </body>
 </html>
+
