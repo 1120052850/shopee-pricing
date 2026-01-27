@@ -3,94 +3,108 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shopee 定价计算器</title>
+  <title>Shopee 跨境定价计算器 - 基于真实费率</title>
+  <meta name="description" content="根据 Shopee 越南、泰国跨境/本土真实费率，一键计算建议上架价格">
   <style>
+    * { box-sizing: border-box; }
     body {
-      font-family: "Segoe UI", sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 650px;
+      margin: 30px auto;
       padding: 20px;
-      background: #f9f9f9;
+      background: #fafafa;
       color: #333;
+      line-height: 1.6;
     }
     h1 {
       text-align: center;
-      color: #ee4d2d; /* Shopee 红 */
+      color: #ee4d2d;
+      margin-bottom: 25px;
+      font-size: 28px;
     }
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 18px;
     }
     label {
       display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #555;
     }
     input, select {
       width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 15px;
     }
     .result {
       background: white;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 25px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border-left: 4px solid #ee4d2d;
     }
     .highlight {
-      font-size: 1.2em;
+      font-size: 1.3em;
       color: #e74c3c;
       font-weight: bold;
     }
     button {
-      width: 100%;
-      padding: 12px;
+      width: 10 s00%;
+      padding: 14px;
       background: #ee4d2d;
       color: white;
       border: none;
-      border-radius: 4px;
-      font-size: 16px;
+      border-radius: 6px;
+      font-size: 17px;
+      font-weight: bold;
       cursor: pointer;
+      transition: background 0.2s;
     }
     button:hover {
       background: #d03a1f;
     }
+    .note {
+      font-size: 13px;
+      color: #888;
+      margin-top: 5px;
+    }
+    .local-currency {
+      color: #2c3e50;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <h1>🛒 Shopee 定价计算器</h1>
+  <h1>🛒 Shopee 跨境定价计算器</h1>
+  <p style="text-align:center; color:#666; margin-top:-15px;">基于你提供的真实费率 & 干线价卡</p>
 
   <div class="form-group">
-    <label for="site">Shopee 站点</label>
+    <label for="site">选择 Shopee 站点</label>
     <select id="site">
-      <option value="tw" data-commission="5" data-fee="0">台湾 (佣金 5%)</option>
-      <option value="my" data-commission="5" data-fee="2">马来 (佣金 5% + 手续费 2%)</option>
-      <option value="th" data-commission="5" data-fee="0">泰国 (佣金 5%)</option>
-      <option value="sg" data-commission="6" data-fee="0">新加坡 (佣金 6%)</option>
+      <option value="vn">越南（跨境）</option>
+      <option value="th_cross">泰国（跨境）</option>
+      <option value="th_local">泰国（本土）</option>
       <option value="custom">自定义</option>
     </select>
   </div>
 
   <div class="form-group">
     <label>采购成本（元）</label>
-    <input type="number" id="cost" placeholder="例如：15.00" step="0.01" value="15">
+    <input type="number" id="cost" placeholder="例如：15.00" step="0.01" value="30">
   </div>
 
   <div class="form-group">
-    <label>运费（元）</label>
-    <input type="number" id="shipping" placeholder="例如：3.00" step="0.01" value="3">
+    <label>商品重量（克）</label>
+    <input type="number" id="weight" placeholder="例如：150" value="150" min="1">
+    <div class="note">用于自动计算干线物流（基于南宁仓价卡）</div>
   </div>
 
   <div class="form-group">
     <label>包装成本（元）</label>
     <input type="number" id="packaging" placeholder="例如：1.00" step="0.01" value="1">
-  </div>
-
-  <div class="form-group">
-    <label>其他成本（元）</label>
-    <input type="number" id="other" placeholder="例如：0.50" step="0.01" value="0.5">
   </div>
 
   <div class="form-group">
@@ -100,72 +114,146 @@
 
   <div class="form-group">
     <label>营销费用（广告/优惠券，元）</label>
-    <input type="number" id="marketing" placeholder="例如：2.00" step="0.01" value="2">
+    <input type="number" id="marketing" placeholder="例如：2.00" step="0.01" value="0">
+    <div class="note">大促时建议设为 0，手动调价更安全</div>
   </div>
 
-  <!-- 自定义佣金/手续费（默认隐藏） -->
+  <!-- 自定义字段（默认隐藏） -->
   <div class="form-group" id="custom-fields" style="display:none;">
     <label>平台佣金（%）</label>
     <input type="number" id="commission" value="5" step="0.1">
     <label>交易手续费（%）</label>
-    <input type="number" id="fee" value="0" step="0.1">
+    <input type="number" id="fee" value="2" step="0.1">
+    <label>服务费（%）</label>
+    <input type="number" id="serviceFee" value="0" step="0.1">
+    <label>汇率（1 CNY = ? 本地币）</label>
+    <input type="number" id="exchange" value="3700" step="1">
   </div>
 
   <button onclick="calculate()">立即计算建议售价</button>
 
   <div class="result" id="result" style="display:none;">
-    <p>✅ 总成本：<span id="totalCost"></span> 元</p>
-    <p>🎯 目标售价（不含平台费）：<span id="targetPrice"></span> 元</p>
-    <p>💡 <strong>建议上架售价（含平台费 & 营销）：</strong><br>
-       <span class="highlight" id="finalPrice"></span> 元</p>
-    <p>📌 提示：已自动优化为 .99 结尾，提升转化率！</p>
+    <p>📦 总成本：<span id="totalCost"></span> 元</p>
+    <p>🎯 目标净收入：<span id="targetNet"></span> 元</p>
+    <p>💡 <strong>建议上架售价（人民币）：</strong><br>
+       <span class="highlight" id="finalPriceRMB"></span> 元</p>
+    <p>🌍 <strong>本地货币建议价：</strong><br>
+       <span class="local-currency" id="localPrice"></span></p>
+    <p style="margin-top:10px; color:#666; font-size:14px;">
+      ✅ 已包含：平台佣金 + 手续费 + 服务费 + 干线物流<br>
+      💡 价格已优化为 .99 结尾，提升转化率
+    </p>
   </div>
 
   <script>
+    // 南宁仓干线价卡（单位：越南盾 VND）
+    // 格式：[最大重量(g), 价格(VND)]
+    const vnShippingTiers = [
+      [30, 3500],
+      [50, 4000],
+      [100, 4400],
+      [200, 5300],
+      [300, 6200],
+      [500, 7800],
+      [1000, 11000]
+    ];
+
+    // 泰国跨境干线（简化：按你表格均值估算，单位：元）
+    function getThailandCrossShipping(weight) {
+      if (weight <= 100) return 29;
+      if (weight <= 200) return 45;
+      if (weight <= 500) return 80;
+      return 120;
+    }
+
     document.getElementById('site').addEventListener('change', function() {
       const custom = document.getElementById('custom-fields');
-      if (this.value === 'custom') {
-        custom.style.display = 'block';
-      } else {
-        custom.style.display = 'none';
-      }
+      custom.style.display = this.value === 'custom' ? 'block' : 'none';
     });
 
     function calculate() {
-      const siteSel = document.getElementById('site');
-      let commission = 5, fee = 0;
-      
-      if (siteSel.value === 'custom') {
+      const site = document.getElementById('site').value;
+      let commission = 0, fee = 0, serviceFee = 0, exchangeRate = 1, shippingRMB = 0;
+
+      // 获取重量
+      const weight = parseFloat(document.getElementById('weight').value) || 100;
+
+      // 根据站点设置参数
+      if (site === 'vn') {
+        // Shopee 越南跨境
+        commission = 15.33;
+        fee = 4.91;
+        serviceFee = 5.0;
+        exchangeRate = 3700;
+        
+        // 查干线价卡（VND → RMB）
+        let vnShipping = 11000; // 默认 >1kg
+        for (const [maxW, price] of vnShippingTiers) {
+          if (weight <= maxW) {
+            vnShipping = price;
+            break;
+          }
+        }
+        shippingRMB = vnShipping / 3700;
+        
+      } else if (site === 'th_cross') {
+        // Shopee 泰国跨境
+        commission = 18.19;
+        fee = 3.21;
+        serviceFee = 5.35;
+        exchangeRate = 5;
+        shippingRMB = getThailandCrossShipping(weight);
+        
+      } else if (site === 'th_local') {
+        // Shopee 泰国本土
+        commission = 8.56;
+        fee = 3.21;
+        serviceFee = 7.49;
+        exchangeRate = 5;
+        shippingRMB = 1.0; // 本土仓发货，极低
+        
+      } else {
+        // 自定义
         commission = parseFloat(document.getElementById('commission').value) || 0;
         fee = parseFloat(document.getElementById('fee').value) || 0;
-      } else {
-        const option = siteSel.selectedOptions[0];
-        commission = parseFloat(option.dataset.commission);
-        fee = parseFloat(option.dataset.fee);
+        serviceFee = parseFloat(document.getElementById('serviceFee').value) || 0;
+        exchangeRate = parseFloat(document.getElementById('exchange').value) || 1;
+        shippingRMB = parseFloat(document.getElementById('shipping').value) || 0;
       }
 
+      const totalRate = (commission + fee + serviceFee) / 100;
+
+      // 成本输入
       const cost = parseFloat(document.getElementById('cost').value) || 0;
-      const shipping = parseFloat(document.getElementById('shipping').value) || 0;
       const packaging = parseFloat(document.getElementById('packaging').value) || 0;
-      const other = parseFloat(document.getElementById('other').value) || 0;
+      const other = 0; // 可扩展
       const profitPercent = parseFloat(document.getElementById('profit').value) || 0;
       const marketing = parseFloat(document.getElementById('marketing').value) || 0;
 
-      const totalCost = cost + shipping + packaging + other;
-      const targetPrice = totalCost * (1 + profitPercent / 100);
-      const platformRate = (commission + fee) / 100;
+      const totalCost = cost + shippingRMB + packaging + other;
+      const targetNet = totalCost * (1 + profitPercent / 100);
 
-      // 计算上架价：满足 (上架价 * (1 - platformRate)) - marketing >= targetPrice
-      let finalPrice = (targetPrice + marketing) / (1 - platformRate);
+      // 防止分母为零
+      if (totalRate >= 1) {
+        alert("平台费率不能 ≥ 100%");
+        return;
+      }
 
-      // 心理定价：向上取整到 .99
-      finalPrice = Math.ceil(finalPrice) - 0.01;
-      if (finalPrice < 0) finalPrice = 0;
+      let finalPriceRMB = (targetNet + marketing) / (1 - totalRate);
+      finalPriceRMB = Math.ceil(finalPriceRMB) - 0.01;
+      if (finalPriceRMB < 0) finalPriceRMB = 0;
+
+      const localPriceValue = finalPriceRMB * exchangeRate;
+      const localCurrency = site === 'vn' ? 'VND' : 'THB';
+      const formattedLocal = localCurrency === 'VND' 
+        ? Math.round(localPriceValue).toLocaleString() 
+        : localPriceValue.toFixed(0);
 
       // 显示结果
       document.getElementById('totalCost').textContent = totalCost.toFixed(2);
-      document.getElementById('targetPrice').textContent = targetPrice.toFixed(2);
-      document.getElementById('finalPrice').textContent = finalPrice.toFixed(2);
+      document.getElementById('targetNet').textContent = targetNet.toFixed(2);
+      document.getElementById('finalPriceRMB').textContent = finalPriceRMB.toFixed(2);
+      document.getElementById('localPrice').textContent = ` $ {formattedLocal}  $ {localCurrency}`;
       document.getElementById('result').style.display = 'block';
     }
   </script>
