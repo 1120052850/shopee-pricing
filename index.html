@@ -3,6 +3,435 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>东南亚跨境定价计算器 - 含实时汇率</title>
+  <meta name="description" content="Shopee/Lazada/TikTok 定价 · 自动获取 VND/THB/PHP/MYR 汇率">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #333;
+      line-height: 1.5;
+    }
+    .container {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      min-height: 100vh;
+      box-shadow: 0 0 20px rgba(0,0,0,0.08);
+      background: white;
+    }
+    .input-panel {
+      flex: 0 0 60%;
+      padding: 30px;
+      background: #fff;
+      border-right: 1px solid #eee;
+    }
+    .input-panel h1 {
+      color: #ee4d2d;
+      margin-bottom: 25px;
+      font-size: 24px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+    .form-group { margin-bottom: 20px; }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #444;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    .note { 
+      font-size: 13px; 
+      color: #888; 
+      margin-top: 5px; 
+    }
+    .exchange-note {
+      font-size: 12px;
+      color: #e74c3c;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+    }
+    .exchange-note span {
+      margin-left: 5px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #ee4d2d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+    button:hover { background: #d03a1f; }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .result-panel {
+      flex: 0 0 40%;
+      padding: 20px;
+      background: #fafafa;
+      overflow-y: auto;
+    }
+    .result-placeholder {
+      text-align: center;
+      color: #999;
+      padding: 40px 20px;
+    }
+    .result-box {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-left: 4px solid #ee4d2d;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 15px 0 10px 0;
+      padding-bottom: 5px;
+      border-bottom: 1px dashed #eee;
+      color: #555;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+    }
+    .detail-label {
+      color: #666;
+    }
+    .detail-value {
+      font-weight: 500;
+      color: #333;
+    }
+    .highlight-row {
+      font-weight: bold;
+      color: #e74c3c;
+      font-size: 16px;
+      margin: 8px 0;
+    }
+    .final-price {
+      font-size: 24px;
+      color: #e74c3c;
+      text-align: center;
+      margin: 15px 0;
+      padding: 10px 0;
+      border-top: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .local-price {
+      text-align: center;
+      font-size: 20px;
+      color: #2c3e50;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    @media (max-width: 768px) {
+      .container { flex-direction: column; min-height: auto; }
+      .input-panel, .result-panel { flex: none; width: 100%; padding: 20px; }
+      .input-panel { border-right: none; border-bottom: 1px solid #eee; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="input-panel">
+      <h1>🌍 东南亚跨境定价计算器</h1>
+      <p class="subtitle">含实时汇率 · 支持 VND / THB / PHP / MYR</p>
+
+      <div class="form-group">
+        <label for="site">选择平台与站点</label>
+        <select id="site" disabled>
+          <option value="">加载中...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>采购成本（元）</label>
+        <input type="number" id="cost" placeholder="例如：30.00" step="0.01" value="30">
+      </div>
+
+      <div class="form-group">
+        <label>商品重量（克）</label>
+        <input type="number" id="weight" placeholder="例如：150" value="150" min="1">
+        <div class="note">自动计算干线物流</div>
+      </div>
+
+      <div class="form-group">
+        <label>包装成本（元）</label>
+        <input type="number" id="packaging" placeholder="例如：1.00" step="0.01" value="1">
+      </div>
+
+      <div class="form-group">
+        <label>目标利润率（%）</label>
+        <input type="number" id="profit" placeholder="例如：30" value="30">
+      </div>
+
+      <div class="form-group">
+        <label>营销费用（广告/优惠券，元）</label>
+        <input type="number" id="marketing" placeholder="例如：2.00" step="0.01" value="0">
+        <div class="note">大促时建议设为 0</div>
+      </div>
+
+      <!-- 汇率显示与覆盖 -->
+      <div class="form-group">
+        <label>当前汇率（1 CNY = ? 本地币）</label>
+        <input type="number" id="exchangeRateInput" step="0.01" readonly>
+        <div class="exchange-note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>数据来自 exchangerate-api.com · 可手动修改</span>
+        </div>
+      </div>
+
+      <button id="calcBtn" onclick="calculate()" disabled>🚀 立即计算建议售价</button>
+    </div>
+
+    <div class="result-panel">
+      <div id="result-placeholder" class="result-placeholder">
+        <p>填写左侧参数<br>点击“立即计算”<br>查看完整利润分析</p>
+      </div>
+      <div id="result-box" class="result-box" style="display:none;">
+        <div class="final-price" id="finalPriceRMB">— 元</div>
+        <div class="local-price" id="localPrice">—</div>
+
+        <div class="section-title">📦 成本构成</div>
+        <div class="detail-row">
+          <span class="detail-label">采购成本</span>
+          <span class="detail-value" id="cost-display">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">干线物流</span>
+          <span class="detail-value" id="shipping-display">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">包装成本</span>
+          <span class="detail-value" id="packaging-display">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">营销费用</span>
+          <span class="detail-value" id="marketing-display">—</span>
+        </div>
+
+        <div class="section-title">💳 平台费用（基于售价）</div>
+        <div class="detail-row">
+          <span class="detail-label">平台佣金</span>
+          <span class="detail-value" id="commission-fee">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">交易手续费</span>
+          <span class="detail-value" id="transaction-fee">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">服务费</span>
+          <span class="detail-value" id="service-fee">—</span>
+        </div>
+
+        <div class="section-title">📊 利润分析</div>
+        <div class="detail-row">
+          <span class="detail-label">总成本</span>
+          <span class="detail-value" id="total-cost-display">—</span>
+        </div>
+        <div class="detail-row highlight-row">
+          <span>预估利润</span>
+          <span id="profit-amount">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">利润率</span>
+          <span class="detail-value" id="profit-margin">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let CONFIG = null;
+    let EXCHANGE_RATES = null;
+
+    // 加载配置
+    async function loadConfig() {
+      try {
+        const res = await fetch('config.json?' + Date.now());
+        CONFIG = await res.json();
+        await loadExchangeRates(); // 加载汇率后再渲染下拉框
+        
+        const select = document.getElementById('site');
+        select.innerHTML = '';
+        Object.entries(CONFIG.platforms).forEach(([key, plat]) => {
+          const opt = document.createElement('option');
+          opt.value = key;
+          opt.textContent = plat.name;
+          select.appendChild(opt);
+        });
+        
+        select.disabled = false;
+        document.getElementById('calcBtn').disabled = false;
+      } catch (err) {
+        alert('❌ 无法加载 config.json');
+        console.error(err);
+      }
+    }
+
+    // 加载实时汇率
+    async function loadExchangeRates() {
+      try {
+        const res = await fetch('https://api.exchangerate-api.com/v4/latest/CNY');
+        const data = await res.json();
+        EXCHANGE_RATES = data.rates;
+        
+        // 默认选第一个平台的汇率
+        const firstPlat = Object.values(CONFIG.platforms)[0];
+        if (firstPlat) {
+          const currencyMap = {
+            'vn': 'VND',
+            'th': 'THB'
+          };
+          const cur = firstPlat.name.includes('越南') ? 'VND' : 'THB';
+          const rate = EXCHANGE_RATES[cur] || 1;
+          document.getElementById('exchangeRateInput').value = rate.toFixed(2);
+          document.getElementById('exchangeRateInput').readOnly = false;
+        }
+      } catch (err) {
+        console.warn('汇率API失败，使用默认值');
+        document.getElementById('exchangeRateInput').value = '3700';
+        document.getElementById('exchangeRateInput').readOnly = false;
+      }
+    }
+
+    // 根据平台自动切换汇率
+    document.getElementById('site').addEventListener('change', e => {
+      if (!EXCHANGE_RATES) return;
+      
+      const site = e.target.value;
+      if (!site || site === 'custom') return;
+      
+      const plat = CONFIG.platforms[site];
+      let targetCurrency = 'VND';
+      if (plat.name.includes('泰国')) targetCurrency = 'THB';
+      if (plat.name.includes('菲律宾')) targetCurrency = 'PHP';
+      if (plat.name.includes('马来西亚')) targetCurrency = 'MYR';
+      
+      const rate = EXCHANGE_RATES[targetCurrency] || 1;
+      document.getElementById('exchangeRateInput').value = rate.toFixed(2);
+    });
+
+    function getThailandShipping(weight) {
+      const base = CONFIG.shipping.th_cross_base;
+      if (weight <= 100) return base["100"];
+      if (weight <= 200) return base["200"];
+      if (weight <= 500) return base["500"];
+      return base["1000"];
+    }
+
+    function calculate() {
+      if (!CONFIG) { alert('配置未加载完成'); return; }
+      
+      const site = document.getElementById('site').value;
+      let commission=0, fee=0, serviceFee=0, exchangeRate=1, shippingRMB=0;
+      const weight = parseFloat(document.getElementById('weight').value) || 100;
+
+      // 获取用户输入的汇率（可覆盖API）
+      exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 1;
+
+      if (site && site !== 'custom') {
+        const plat = CONFIG.platforms[site];
+        ({commission, fee, serviceFee} = plat);
+        
+        if (plat.shippingType === 'vn') {
+          const tier = CONFIG.shipping.vn_tiers.find(([w]) => weight <= w);
+          const vnShip = tier ? tier[1] : 11000;
+          shippingRMB = vnShip / exchangeRate;
+        } else if (plat.shippingType === 'th_cross') {
+          shippingRMB = getThailandShipping(weight);
+        } else if (plat.shippingType === 'th_local') {
+          shippingRMB = 1.0;
+        }
+      } else {
+        // 自定义模式（此处可扩展）
+        commission = 5; fee = 2; serviceFee = 0;
+        shippingRMB = 2.0;
+      }
+
+      const totalRate = (commission + fee + serviceFee) / 100;
+      if (totalRate >= 1) { alert("平台费率不能 ≥ 100%"); return; }
+
+      const cost = parseFloat(document.getElementById('cost').value) || 0;
+      const packaging = parseFloat(document.getElementById('packaging').value) || 0;
+      const profitTarget = parseFloat(document.getElementById('profit').value) || 0;
+      const marketing = parseFloat(document.getElementById('marketing').value) || 0;
+
+      const totalCost = cost + shippingRMB + packaging + marketing;
+      const targetNet = totalCost * (1 + profitTarget / 100);
+      let finalRMB = (targetNet) / (1 - totalRate);
+      finalRMB = Math.ceil(finalRMB) - 0.01;
+      if (finalRMB < 0) finalRMB = 0;
+
+      // 计算各项
+      const commissionAmount = finalRMB * (commission / 100);
+      const feeAmount = finalRMB * (fee / 100);
+      const serviceAmount = finalRMB * (serviceFee / 100);
+      const actualProfit = finalRMB - (commissionAmount + feeAmount + serviceAmount) - totalCost;
+      const profitMargin = (actualProfit / finalRMB * 100).toFixed(1);
+
+      // 本地货币
+      const localVal = finalRMB * exchangeRate;
+      const currency = site.includes('vn') ? 'VND' : 
+                      site.includes('th') ? 'THB' : 'LOCAL';
+      const localStr = currency === 'VND' ? Math.round(localVal).toLocaleString() : localVal.toFixed(0);
+
+      // 更新界面
+      document.getElementById('finalPriceRMB').textContent = finalRMB.toFixed(2) + ' 元';
+      document.getElementById('localPrice').textContent = ` $ {localStr}  $ {currency}`;
+
+      document.getElementById('cost-display').textContent = cost.toFixed(2) + ' 元';
+      document.getElementById('shipping-display').textContent = shippingRMB.toFixed(2) + ' 元';
+      document.getElementById('packaging-display').textContent = packaging.toFixed(2) + ' 元';
+      document.getElementById('marketing-display').textContent = marketing.toFixed(2) + ' 元';
+
+      document.getElementById('commission-fee').textContent = commissionAmount.toFixed(2) + ' 元';
+      document.getElementById('transaction-fee').textContent = feeAmount.toFixed(2) + ' 元';
+      document.getElementById('service-fee').textContent = serviceAmount.toFixed(2) + ' 元';
+
+      document.getElementById('total-cost-display').textContent = totalCost.toFixed(2) + ' 元';
+      document.getElementById('profit-amount').textContent = actualProfit.toFixed(2) + ' 元';
+      document.getElementById('profit-margin').textContent = profitMargin + '%';
+
+      document.getElementById('result-placeholder').style.display = 'none';
+      document.getElementById('result-box').style.display = 'block';
+    }
+
+    loadConfig();
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>东南亚跨境定价计算器 - 专业版</title>
   <meta name="description" content="Shopee/Lazada/TikTok 定价工具 · 9项明细数据">
   <style>
@@ -381,3 +810,4 @@
   </script>
 </body>
 </html>
+
