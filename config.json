@@ -1,40 +1,124 @@
 {
   "platforms": {
-    "shopee_vn_cross": {
-      "name": "Shopee 越南（跨境）",
-      "commission": 15.33,
-      "fee": 4.91,
-      "serviceFee": 5.0
+    "shopee-vn": {
+      "name": "Shopee越南跨境",
+      "currency": "VND",
+      "defaultPrice": 80000,
+      "defaultPurchase": 13,
+      "defaultWeight": 100,
+      "defaultExchange": 3700,
+      "storageCost": 1.4,
+      "transactionFeeRate": 0.0491,
+      "fcssRate": 0.05,
+      "commissionRate": 0.1533,
+      "superAllianceRate": 0.01,
+      "couponRate": 0,
+      "bundleRate": 0.02,
+      "platformFee": 13800,
+      "shippingRate": 0.008,
+      "shippingFormula": "重量 × 0.008 RMB/g",
+      "shippingDescription": "越南跨境干线运费简化计算"
     },
-    "shopee_th_cross": {
-      "name": "Shopee 泰国（跨境）",
-      "commission": 18.19,
-      "fee": 3.21,
-      "serviceFee": 5.35
+    "shopee-th": {
+      "name": "Shopee泰国跨境",
+      "currency": "THB",
+      "defaultPrice": 180,
+      "defaultPurchase": 5.1,
+      "defaultWeight": 150,
+      "defaultExchange": 5,
+      "storageCost": 1.4,
+      "transactionFeeRate": 0.0321,
+      "commissionRate": 0.1722,
+      "fcssRate": 0.05,
+      "superAllianceRate": 0.01,
+      "couponRate": 0,
+      "bundleRate": 0.02,
+      "platformFee": 1.07,
+      "shippingRate": 0.006,
+      "shippingFormula": "重量 × 0.006 RMB/g",
+      "shippingDescription": "泰国跨境空运干线"
     },
-    "shopee_th_local": {
-      "name": "Shopee 泰国（本土）",
-      "commission": 8.56,
-      "fee": 3.21,
-      "serviceFee": 7.49
+    "shopee-th-local": {
+      "name": "Shopee泰国本土",
+      "currency": "THB",
+      "defaultPrice": 35,
+      "defaultPurchase": 2.6,
+      "defaultWeight": 50,
+      "defaultExchange": 5,
+      "storageCost": 1.7,
+      "transactionFeeRate": 0.0321,
+      "fcssRate": 0.0749,
+      "commissionRate": 0.0856,
+      "superAllianceRate": 0.01,
+      "couponRate": 0.05,
+      "bundleRate": 0.02,
+      "platformFee": 1.07,
+      "shippingRate": 0.0095,
+      "shippingFormula": "重量 × 0.0095 RMB/g",
+      "shippingDescription": "泰国本土陆运干线"
     },
-    "lazada_vn": {
-      "name": "Lazada 越南",
-      "commission": 13.35,
-      "fee": 4.15,
-      "serviceFee": 0
+    "lazada-vn": {
+      "name": "Lazada越南跨境",
+      "currency": "VND",
+      "defaultPrice": 78200,
+      "defaultPurchase": 9,
+      "defaultWeight": 250,
+      "defaultExchange": 3700,
+      "storageCost": 1.4,
+      "transactionFeeRate": 0.0415,
+      "fcssRate": 0,
+      "commissionRate": 0.1335,
+      "superAllianceRate": 0.01,
+      "couponRate": 0.05,
+      "bundleRate": 0,
+      "platformFee": 13800,
+      "shippingRate": 0.008,
+      "shippingFormula": "按重量阶梯收费（简化）",
+      "shippingDescription": "越南跨境按重量阶梯计算运费"
     },
-    "lazada_th_air": {
-      "name": "Lazada 泰国（空运）",
-      "commission": 11.24,
-      "fee": 3.21,
-      "serviceFee": 4.0
+    "lazada-th": {
+      "name": "Lazada泰国跨境",
+      "currency": "THB",
+      "defaultPrice": 64,
+      "defaultPurchase": 7.1,
+      "defaultWeight": 100,
+      "defaultExchange": 5,
+      "storageCost": 1.4,
+      "transactionFeeRate": 0.0321,
+      "fcssRate": 0.04,
+      "commissionRate": 0.1124,
+      "superAllianceRate": 0.01,
+      "couponRate": 0.05,
+      "bundleRate": 0,
+      "platformFee": 0,
+      "shippingRate": 0.025,
+      "shippingFormula": "重量 × 0.025 RMB/g",
+      "shippingDescription": "泰国跨境空运干线"
     },
-    "lazada_th_sea": {
-      "name": "Lazada 泰国（海运）",
-      "commission": 13.59,
-      "fee": 3.21,
-      "serviceFee": 4.0
+    "lazada-th-sea": {
+      "name": "Lazada泰国海运",
+      "currency": "THB",
+      "defaultPrice": 75,
+      "defaultPurchase": 6,
+      "defaultWeight": 500,
+      "defaultExchange": 5,
+      "storageCost": 1.4,
+      "transactionFeeRate": 0.0321,
+      "fcssRate": 0.04,
+      "commissionRate": 0.1124,
+      "superAllianceRate": 0.01,
+      "couponRate": 0.05,
+      "bundleRate": 0,
+      "platformFee": 0,
+      "shippingRate": 0.006,
+      "shippingFormula": "重量 × 0.006 RMB/g",
+      "shippingDescription": "泰国海运干线"
     }
+  },
+  "generalSettings": {
+    "storageCost": 1.4,
+    "superAllianceRate": 0.01,
+    "activityCommissionRate": 0.01,
+    "coinDeductionRate": 0.01
   }
 }
