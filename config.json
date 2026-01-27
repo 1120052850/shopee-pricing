@@ -24,17 +24,17 @@
       "fee": 4.15,
       "serviceFee": 0
     },
-    "lazada_th": {
-      "name": "Lazada 泰国",
+    "lazada_th_air": {
+      "name": "Lazada 泰国（空运）",
       "commission": 11.24,
       "fee": 3.21,
       "serviceFee": 4.0
     },
-    "tiktok_th": {
-      "name": "TikTok Shop 泰国",
-      "commission": 6.42,
+    "lazada_th_sea": {
+      "name": "Lazada 泰国（海运）",
+      "commission": 13.59,
       "fee": 3.21,
-      "serviceFee": 6.42
+      "serviceFee": 4.0
     }
   }
 }
