@@ -21,7 +21,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background-color: white;
             border-radius: 12px;
@@ -66,8 +66,9 @@
         
         .result-section {
             flex: 2;
-            min-width: 500px;
+            min-width: 600px;
             padding: 30px;
+            overflow-x: auto;
         }
         
         .section-title {
@@ -101,6 +102,7 @@
             text-align: center;
             transition: all 0.3s ease;
             font-weight: 600;
+            font-size: 0.9rem;
         }
         
         .platform-option:hover {
@@ -185,6 +187,7 @@
             padding: 16px 12px;
             text-align: center;
             font-weight: 600;
+            white-space: nowrap;
         }
         
         .result-table td {
@@ -268,6 +271,12 @@
             border-top: 1px solid #eee;
         }
         
+        @media (max-width: 1200px) {
+            .result-section {
+                overflow-x: scroll;
+            }
+        }
+        
         @media (max-width: 900px) {
             .calculator-container {
                 flex-direction: column;
@@ -305,13 +314,55 @@
         .mode-info strong {
             color: #0d47a1;
         }
+        
+        .fee-details {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .fee-details h4 {
+            margin-bottom: 10px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        
+        .fee-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .fee-label {
+            font-weight: 500;
+        }
+        
+        .fee-value {
+            font-weight: 600;
+        }
+        
+        .shipping-rate {
+            background-color: #fff3e0;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        
+        .currency-symbol {
+            font-size: 0.9em;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1><i class="fas fa-calculator"></i> 东南亚电商定价计算器</h1>
-            <p>Shopee & Lazada 跨境/本土利润计算工具</p>
+            <p>Shopee & Lazada 跨境/本土利润计算工具 - 显示详细费用及订单收入</p>
         </header>
         
         <div class="calculator-container">
@@ -362,6 +413,29 @@
                     <i class="fas fa-calculator"></i> 计算利润
                 </button>
                 
+                <div class="fee-details" id="feeDetails">
+                    <h4><i class="fas fa-file-invoice-dollar"></i> 当前模式费率详情</h4>
+                    <div class="fee-row">
+                        <span class="fee-label">交易手续费：</span>
+                        <span class="fee-value" id="transactionFeeRate">4.91%</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="fee-label">FCSS+CCB服务费：</span>
+                        <span class="fee-value" id="fcssRate">5%</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="fee-label">佣金：</span>
+                        <span class="fee-value" id="commissionRate">15.33%</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="fee-label">超级联盟：</span>
+                        <span class="fee-value" id="superAllianceRate">1%</span>
+                    </div>
+                    <div class="shipping-rate" id="shippingRateInfo">
+                        <i class="fas fa-shipping-fast"></i> 干线运费费率：VLOOKUP查表 (越南) / 0.006 RMB/g (泰国跨境) / 0.0095 RMB/g (本土陆运) / 0.006 RMB/g (海运)
+                    </div>
+                </div>
+                
                 <div class="note">
                     <i class="fas fa-info-circle"></i> 计算基于Excel定价表逻辑，包含仓储、佣金、交易费、FCSS、干线运费等所有成本。
                 </div>
@@ -385,29 +459,33 @@
                     <div class="summary-card">
                         <h3>建议上架价格</h3>
                         <div class="value" id="suggestedPrice">0</div>
-                        <div class="unit">本地货币</div>
+                        <div class="unit" id="currencyUnit">VND</div>
                     </div>
                 </div>
                 
-                <table class="result-table">
-                    <thead>
-                        <tr>
-                            <th>件数</th>
-                            <th>总售价</th>
-                            <th>总成本 (RMB)</th>
-                            <th>总收入 (RMB)</th>
-                            <th>毛利 (RMB)</th>
-                            <th>毛利率</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resultTable">
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px;">
-                                请设置参数并点击"计算利润"按钮
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th>件数</th>
+                                <th>总售价</th>
+                                <th>干线运费 (RMB)</th>
+                                <th>订单收入 (本地)</th>
+                                <th>订单收入 (RMB)</th>
+                                <th>总成本 (RMB)</th>
+                                <th>毛利 (RMB)</th>
+                                <th>毛利率</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultTable">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 40px;">
+                                    请设置参数并点击"计算利润"按钮
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
                 
                 <div class="note">
                     <i class="fas fa-lightbulb"></i> <strong>利润优化建议：</strong>
@@ -439,6 +517,8 @@
                 superAllianceRate: 0.01,
                 platformFee: 13800,
                 taxRate: 0.1,
+                shippingRate: 'VLOOKUP查表',
+                shippingFormula: 'vlookup',
                 info: '汇率: 3700 VND/RMB | 佣金: 15.33% | 交易费: 4.91% | FCSS+CCB: 5%'
             },
             'shopee-th': {
@@ -455,6 +535,8 @@
                 superAllianceRate: 0.01,
                 platformFee: 1.07,
                 taxRate: 0.07,
+                shippingRate: 0.006,
+                shippingFormula: 'weight * 0.006',
                 info: '汇率: 5 THB/RMB | 佣金: 18.19% | 交易费: 3.21% | FCSS+CCB: 5.35%'
             },
             'shopee-th-local': {
@@ -472,6 +554,8 @@
                 platformFee: 1.07,
                 taxRate: 0.07,
                 couponRate: 0.05,
+                shippingRate: 0.0095,
+                shippingFormula: 'weight * 0.0095',
                 info: '汇率: 5 THB/RMB | 佣金: 8.56% | 交易费: 3.21% | FCSS+CCB: 7.49% | 优惠券: 5%'
             },
             'lazada-vn': {
@@ -488,6 +572,8 @@
                 superAllianceRate: 0.01,
                 platformFee: 13800,
                 taxRate: 0,
+                shippingRate: '按重量阶梯',
+                shippingFormula: 'if(weight<=300,2.65,if(weight<=1000,4.2,4.7))',
                 info: '汇率: 3700 VND/RMB | 佣金: 13.35% | 交易费: 4.15% | FCSS+CCB: 0%'
             },
             'lazada-th': {
@@ -505,6 +591,8 @@
                 platformFee: 0,
                 taxRate: 0,
                 couponRate: 0.05,
+                shippingRate: 0.025,
+                shippingFormula: 'weight * 0.025',
                 info: '汇率: 5 THB/RMB | 佣金: 11.24% | 交易费: 3.21% | FCSS+CCB: 4% | 优惠券: 5%'
             },
             'lazada-th-sea': {
@@ -522,6 +610,8 @@
                 platformFee: 0,
                 taxRate: 0,
                 couponRate: 0.05,
+                shippingRate: 0.006,
+                shippingFormula: 'weight * 0.006',
                 info: '汇率: 5 THB/RMB | 佣金: 11.24% | 交易费: 3.21% | FCSS+CCB: 4% | 优惠券: 5%'
             }
         };
@@ -542,7 +632,15 @@
         const singleProfitRateEl = document.getElementById('singleProfitRate');
         const totalProfitEl = document.getElementById('totalProfit');
         const suggestedPriceEl = document.getElementById('suggestedPrice');
+        const currencyUnitEl = document.getElementById('currencyUnit');
         const optimizationTipEl = document.getElementById('optimizationTip');
+        
+        // 费率详情元素
+        const transactionFeeRateEl = document.getElementById('transactionFeeRate');
+        const fcssRateEl = document.getElementById('fcssRate');
+        const commissionRateEl = document.getElementById('commissionRate');
+        const superAllianceRateEl = document.getElementById('superAllianceRate');
+        const shippingRateInfoEl = document.getElementById('shippingRateInfo');
         
         // 平台选择事件
         platformOptions.forEach(option => {
@@ -560,9 +658,13 @@
                 purchasePriceInput.value = config.defaultPurchase;
                 weightInput.value = config.defaultWeight;
                 exchangeRateInput.value = config.defaultExchange;
+                currencyUnitEl.textContent = config.currency;
                 
                 // 更新模式信息
                 modeInfo.innerHTML = `<strong>${config.name}</strong> - ${config.info}`;
+                
+                // 更新费率详情
+                updateFeeDetails(config);
                 
                 // 计算并显示结果
                 calculateAndDisplay();
@@ -579,6 +681,29 @@
         
         // 初始计算
         calculateAndDisplay();
+        
+        // 更新费率详情显示
+        function updateFeeDetails(config) {
+            transactionFeeRateEl.textContent = `${(config.transactionFeeRate * 100).toFixed(2)}%`;
+            fcssRateEl.textContent = `${(config.fcssRate * 100).toFixed(2)}%`;
+            commissionRateEl.textContent = `${(config.commissionRate * 100).toFixed(2)}%`;
+            superAllianceRateEl.textContent = `${(config.superAllianceRate * 100).toFixed(2)}%`;
+            
+            let shippingInfo = '';
+            if (config.shippingFormula === 'vlookup') {
+                shippingInfo = `<i class="fas fa-shipping-fast"></i> 干线运费费率：VLOOKUP查表（越南南宁仓干线价卡）`;
+            } else if (config.name.includes('泰国本土')) {
+                shippingInfo = `<i class="fas fa-shipping-fast"></i> 陆运干线费率：${config.shippingRate} RMB/g (公式: ${config.shippingFormula})`;
+            } else if (config.name.includes('泰国海运')) {
+                shippingInfo = `<i class="fas fa-ship"></i> 海运干线费率：${config.shippingRate} RMB/g (公式: ${config.shippingFormula})`;
+            } else if (config.name.includes('泰国跨境')) {
+                shippingInfo = `<i class="fas fa-shipping-fast"></i> 干线运费费率：${config.shippingRate} RMB/g (公式: ${config.shippingFormula})`;
+            } else if (config.name.includes('Lazada越南')) {
+                shippingInfo = `<i class="fas fa-shipping-fast"></i> 尾程运费：按重量阶梯计算 (公式: ${config.shippingFormula})`;
+            }
+            
+            shippingRateInfoEl.innerHTML = shippingInfo;
+        }
         
         // 计算并显示结果
         function calculateAndDisplay() {
@@ -617,9 +742,11 @@
                 
                 row.innerHTML = `
                     <td>${quantity}</td>
-                    <td>${formatNumber(result.totalPrice)} ${config.currency}</td>
+                    <td>${formatNumber(result.totalPrice)} <span class="currency-symbol">${config.currency}</span></td>
+                    <td>${formatCurrency(result.shippingCost)}</td>
+                    <td>${formatNumber(result.orderRevenueLocal)} <span class="currency-symbol">${config.currency}</span></td>
+                    <td>${formatCurrency(result.orderRevenueRMB)}</td>
                     <td>${formatCurrency(result.totalCost)}</td>
-                    <td>${formatCurrency(result.totalRevenue)}</td>
                     <td class="${result.profit >= 0 ? 'profit-positive' : 'profit-negative'}">${formatCurrency(result.profit)}</td>
                     <td>${(result.profitRate * 100).toFixed(2)}%</td>
                 `;
@@ -650,23 +777,33 @@
             // 仓储成本（部分模式固定，不随数量增加）
             let storageCost = config.storageCost;
             if (config.name.includes('Shopee越南跨境') || config.name.includes('Lazada越南跨境')) {
-                storageCost = quantity === 1 ? config.storageCost : config.storageCost;
+                storageCost = config.storageCost; // 固定值
             }
             
             // 干线运费
             let shippingCost = 0;
+            let shippingDetail = '';
+            
             if (config.name.includes('越南跨境')) {
                 // 越南干线运费根据重量查表（简化计算）
                 shippingCost = calculateVietnamShipping(weight, quantity, exchangeRate);
+                shippingDetail = `VLOOKUP(${weight * quantity}g) → ${formatCurrency(shippingCost)}`;
             } else if (config.name.includes('泰国跨境')) {
                 // 泰国跨境干线运费
-                shippingCost = weight * quantity * 0.006;
+                shippingCost = weight * quantity * config.shippingRate;
+                shippingDetail = `${weight * quantity}g × ${config.shippingRate} = ${formatCurrency(shippingCost)}`;
             } else if (config.name.includes('泰国本土')) {
                 // 泰国本土陆运干线
-                shippingCost = weight * quantity * 0.0095;
+                shippingCost = weight * quantity * config.shippingRate;
+                shippingDetail = `${weight * quantity}g × ${config.shippingRate} = ${formatCurrency(shippingCost)}`;
             } else if (config.name.includes('Lazada泰国海运')) {
                 // Lazada泰国海运干线
-                shippingCost = weight * quantity * 0.006;
+                shippingCost = weight * quantity * config.shippingRate;
+                shippingDetail = `${weight * quantity}g × ${config.shippingRate} = ${formatCurrency(shippingCost)}`;
+            } else if (config.name.includes('Lazada越南跨境')) {
+                // Lazada越南尾程运费
+                shippingCost = calculateLazadaVietnamShipping(weight, quantity);
+                shippingDetail = `阶梯运费: ${formatCurrency(shippingCost)}`;
             }
             
             // 套装加购折扣（从第2件起）
@@ -688,22 +825,29 @@
             const superAlliance = Math.round((totalPrice - couponDiscount - bundleDiscount) * config.superAllianceRate);
             const platformFee = config.platformFee;
             
+            // 计算订单收入（本地货币）
+            // 根据Excel公式：订单收入 = 售价 - 优惠券 - 套装加购 - 佣金 - FCSS - 交易手续费 - 超级联盟
+            const orderRevenueLocal = totalPrice - couponDiscount - bundleDiscount - commission - fcssFee - transactionFee - superAlliance;
+            
+            // 订单收入（人民币）
+            const orderRevenueRMB = orderRevenueLocal / exchangeRate;
+            
             // 总成本
             const totalCost = purchaseCost + storageCost + shippingCost;
             
-            // 总收入（人民币）
-            const totalRevenue = (totalPrice - transactionFee - fcssFee - commission - couponDiscount - bundleDiscount - superAlliance - platformFee) / exchangeRate;
-            
             // 毛利
-            const profit = totalRevenue - totalCost;
+            const profit = orderRevenueRMB - totalCost;
             
             // 毛利率
-            const profitRate = totalRevenue > 0 ? profit / totalRevenue : 0;
+            const profitRate = orderRevenueRMB > 0 ? profit / orderRevenueRMB : 0;
             
             return {
                 totalPrice,
+                shippingCost,
+                shippingDetail,
+                orderRevenueLocal,
+                orderRevenueRMB,
                 totalCost,
-                totalRevenue,
                 profit,
                 profitRate
             };
@@ -714,7 +858,7 @@
             // 实际总重量
             const totalWeight = weight * quantity;
             
-            // 简化计算：根据重量区间估算
+            // 简化计算：根据重量区间估算（基于shopee越南南宁仓干线价卡）
             let shippingVND = 0;
             
             if (totalWeight <= 100) {
@@ -736,6 +880,20 @@
             
             // 转换为人民币
             return shippingVND / exchangeRate;
+        }
+        
+        // 计算Lazada越南尾程运费
+        function calculateLazadaVietnamShipping(weight, quantity) {
+            const totalWeight = weight * quantity;
+            
+            // Lazada越南尾程运费规则
+            if (totalWeight <= 300) {
+                return 2.65;
+            } else if (totalWeight <= 1000) {
+                return 4.2;
+            } else {
+                return 4.7;
+            }
         }
         
         // 更新优化建议
