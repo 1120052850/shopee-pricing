@@ -321,7 +321,7 @@
             background-color: #f5f5f5;
             border-radius: 8px;
             padding: 20px;
-            margin-top: 30px;
+            margin-bottom: 30px;
             font-size: 0.9rem;
         }
         
@@ -661,15 +661,17 @@
                     <i class="fas fa-calculator"></i> 计算利润
                 </button>
                 
-                <!-- 建议上架价格板块（已从右侧移到左侧） -->
+                <!-- 建议上架价格板块（保持在左侧） -->
                 <div class="suggested-price-card">
                     <h3>建议上架价格</h3>
                     <div class="value" id="suggestedPrice">133,333</div>
                     <div class="unit" id="currencyUnit">VND</div>
                     <div class="formula-note" id="suggestedPriceFormula">公式：售价 / (1 - 折扣率) = 80,000 / (1 - 0.4) = 133,333 VND</div>
                 </div>
-                
-                <!-- 单件费用详情板块（保持在左侧） -->
+            </div>
+            
+            <div class="result-section">
+                <!-- 单件费用详情板块（已移动到右侧，在利润计算结果上方） -->
                 <div class="fee-details" id="feeDetails">
                     <h4><i class="fas fa-file-invoice-dollar"></i> 单件费用详情（本地货币）</h4>
                     <div class="fee-item">
@@ -734,9 +736,7 @@
                         <div class="fee-local" id="totalRevenueLocal">≈ ¥15.91</div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="result-section">
+                
                 <h2 class="section-title"><i class="fas fa-chart-line"></i> 利润计算结果（1-5件）</h2>
                 
                 <div style="overflow-x: auto;">
