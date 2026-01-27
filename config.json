@@ -5,73 +5,32 @@
       "commission": 15.33,
       "fee": 4.91,
       "serviceFee": 5.0,
-      "exchangeRate": 3700,
       "shippingType": "vn"
     },
-    "shopee_th_cross": {
+    "shopee_th": {
       "name": "Shopee 泰国（跨境）",
       "commission": 18.19,
       "fee": 3.21,
       "serviceFee": 5.35,
-      "exchangeRate": 5,
       "shippingType": "th_cross"
     },
-    "shopee_th_local": {
-      "name": "Shopee 泰国（本土）",
-      "commission": 8.56,
-      "fee": 3.21,
-      "serviceFee": 7.49,
-      "exchangeRate": 5,
-      "shippingType": "th_local"
-    },
-    "lazada_vn": {
-      "name": "Lazada 越南",
-      "commission": 4,
+    "lazada_ph": {
+      "name": "Lazada 菲律宾",
+      "commission": 6,
       "fee": 2,
       "serviceFee": 0,
-      "exchangeRate": 3700,
-      "shippingType": "vn"
+      "shippingType": "ph"
     },
-    "lazada_th": {
-      "name": "Lazada 泰国",
-      "commission": 4,
-      "fee": 2,
-      "serviceFee": 0,
-      "exchangeRate": 5,
-      "shippingType": "th_cross"
-    },
-    "tiktok_vn": {
-      "name": "TikTok 越南",
+    "tiktok_my": {
+      "name": "TikTok 马来西亚",
       "commission": 5,
       "fee": 2,
       "serviceFee": 0,
-      "exchangeRate": 3700,
-      "shippingType": "vn"
-    },
-    "tiktok_th": {
-      "name": "TikTok 泰国",
-      "commission": 5,
-      "fee": 2,
-      "serviceFee": 0,
-      "exchangeRate": 5,
-      "shippingType": "th_cross"
+      "shippingType": "my"
     }
   },
   "shipping": {
-    "vn_tiers": [
-      [30, 3500],
-      [50, 4000],
-      [100, 4400],
-      [200, 5300],
-      [300, 6200],
-      [500, 7800],
-      [1000, 11000]
-    ],
-    "th_cross_base": {
-      "100": 29,
-      "200": 45,
-      "500": 80,
-      "1000": 120
-    }
+    "vn_tiers": [[30,3500],[50,4000],[100,4400],[200,5300],[300,6200],[500,7800],[1000,11000]],
+    "th_cross_base": {"100":29,"200":45,"500":80,"1000":120}
   }
 }
