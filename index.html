@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>泰越跨境定价计算器</title>
-  <meta name="description" content="Shopee / Lazada / TikTok · 专注泰国 & 越南市场">
+  <meta name="description" content="Shopee / Lazada / TikTok · 泰国 & 越南 · 干线成本手动输入">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -222,7 +222,7 @@
         <span>正在加载汇率…</span>
       </div>
 
-      <p class="subtitle">专注泰国 & 越南 · 支持 Shopee / Lazada / TikTok</p>
+      <p class="subtitle">专注泰国 & 越南 · 干线成本请手动填写</p>
 
       <div class="form-group">
         <label for="site">选择平台与站点</label>
@@ -236,10 +236,11 @@
         <input type="number" id="cost" placeholder="例如：30.00" step="0.01" value="30">
       </div>
 
+      <!-- ✅ 新增：干线物流成本（手动输入） -->
       <div class="form-group">
-        <label>商品重量（克）</label>
-        <input type="number" id="weight" placeholder="例如：150" value="150" min="1">
-        <div class="note">自动计算干线物流</div>
+        <label>干线物流成本（元）</label>
+        <input type="number" id="shipping" placeholder="例如：2.50" step="0.01" value="2.5">
+        <div class="note">跨境头程 or 本土仓补货成本，请自行核算</div>
       </div>
 
       <div class="form-group">
@@ -459,62 +460,36 @@
       }
     }
 
-    function getThailandShipping(weight) {
-      const base = CONFIG.shipping.th_cross_base;
-      if (weight <= 100) return base["100"];
-      if (weight <= 200) return base["200"];
-      if (weight <= 500) return base["500"];
-      return base["1000"];
-    }
-
     function calculate() {
       if (!CONFIG) { alert('配置未加载完成'); return; }
       
       const site = document.getElementById('site').value;
-      let commission = 0, fee = 0, serviceFee = 0, shippingRMB = 0;
-      const weight = parseFloat(document.getElementById('weight').value) || 100;
-
-      const currencyCode = CURRENT_CURRENCY;
-      const exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 1;
-
-      updateExchangeBadge(currencyCode, exchangeRate);
-
-      if (site && CONFIG.platforms[site]) {
-        const plat = CONFIG.platforms[site];
-        ({commission, fee, serviceFee} = plat);
-        
-        // ✅ 仅处理越南 & 泰国物流
-        if (plat.shippingType === 'vn') {
-          // 越南跨境：按重量查 tier
-          const tier = CONFIG.shipping.vn_tiers.find(([w]) => weight <= w);
-          const vnShip = tier ? tier[1] : 11000; // 单位：VND
-          shippingRMB = vnShip / exchangeRate;
-        } else if (plat.shippingType === 'th_cross') {
-          // 泰国跨境：固定人民币成本
-          shippingRMB = getThailandShipping(weight);
-        } else if (plat.shippingType === 'th_local' || plat.shippingType === 'vn_local') {
-          // 本土仓发货，物流成本极低
-          shippingRMB = 1.0;
-        } else {
-          // 默认兜底（理论上不会触发）
-          shippingRMB = 2.0;
-        }
-      } else {
+      let commission = 0, fee = 0, serviceFee = 0;
+      if (!site || !CONFIG.platforms[site]) {
         alert('请选择有效平台');
         return;
       }
 
-      const totalRate = (commission + fee + serviceFee) / 100;
-      if (totalRate >= 1) { alert("平台费率不能 ≥ 100%"); return; }
+      const plat = CONFIG.platforms[site];
+      ({commission, fee, serviceFee} = plat);
 
+      const currencyCode = CURRENT_CURRENCY;
+      const exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 1;
+      updateExchangeBadge(currencyCode, exchangeRate);
+
+      // ✅ 所有成本均来自用户输入
       const cost = parseFloat(document.getElementById('cost').value) || 0;
+      const shipping = parseFloat(document.getElementById('shipping').value) || 0; // 👈 手动输入
       const packaging = parseFloat(document.getElementById('packaging').value) || 0;
       const profitTarget = parseFloat(document.getElementById('profit').value) || 0;
       const marketing = parseFloat(document.getElementById('marketing').value) || 0;
 
-      const totalCost = cost + shippingRMB + packaging + marketing;
+      const totalCost = cost + shipping + packaging + marketing;
+      const totalRate = (commission + fee + serviceFee) / 100;
+      if (totalRate >= 1) { alert("平台费率不能 ≥ 100%"); return; }
+
       const targetNet = totalCost * (1 + profitTarget / 100);
-      let finalRMB = (targetNet) / (1 - totalRate);
+      let finalRMB = targetNet / (1 - totalRate);
       finalRMB = Math.ceil(finalRMB) - 0.01;
       if (finalRMB < 0) finalRMB = 0;
 
@@ -538,7 +513,7 @@
 
       document.getElementById('finalPriceRMB').textContent = finalRMB.toFixed(2) + ' 元';
       document.getElementById('cost-display').textContent = cost.toFixed(2) + ' 元';
-      document.getElementById('shipping-display').textContent = shippingRMB.toFixed(2) + ' 元';
+      document.getElementById('shipping-display').textContent = shipping.toFixed(2) + ' 元'; // 显示用户输入值
       document.getElementById('packaging-display').textContent = packaging.toFixed(2) + ' 元';
       document.getElementById('marketing-display').textContent = marketing.toFixed(2) + ' 元';
       document.getElementById('commission-fee').textContent = commissionAmount.toFixed(2) + ' 元';
