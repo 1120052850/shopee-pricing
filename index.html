@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>东南亚跨境定价计算器 - 含实时汇率与时间戳</title>
-  <meta name="description" content="Shopee/Lazada/TikTok 定价 · VND/THB/PHP/MYR 汇率 + 货币图标 + 更新时间">
+  <title>东南亚跨境定价计算器 - 平台与货币分离</title>
+  <meta name="description" content="Shopee/Lazada/TikTok 定价 · 平台费率与目标货币独立选择 · 实时汇率带时间戳">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -204,7 +204,7 @@
         </div>
       </div>
 
-      <!-- ✅ 新增：汇率时间戳 -->
+      <!-- ✅ 汇率时间戳 -->
       <div id="exchange-timestamp" class="exchange-timestamp">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"></circle>
@@ -213,13 +213,28 @@
         <span>正在加载汇率…</span>
       </div>
 
-      <p class="subtitle">含实时汇率 · 支持 VND / THB / PHP / MYR</p>
+      <p class="subtitle">平台费率与目标货币独立选择 · 含实时汇率与时间戳</p>
 
+      <!-- ✅ 平台选择 -->
       <div class="form-group">
-        <label for="site">选择平台与站点</label>
+        <label for="site">选择平台与站点（决定费率 & 物流）</label>
         <select id="site" disabled>
           <option value="">加载中...</option>
         </select>
+      </div>
+
+      <!-- ✅ 独立货币选择 -->
+      <div class="form-group">
+        <label for="targetCurrency">目标市场货币（决定汇率 & 显示）</label>
+        <select id="targetCurrency">
+          <option value="VND">越南盾 (₫) - VND</option>
+          <option value="THB">泰铢 (฿) - THB</option>
+          <option value="PHP">菲律宾比索 (₱) - PHP</option>
+          <option value="MYR">马来西亚林吉特 (RM) - MYR</option>
+        </select>
+        <div class="note" style="font-size:12px; color:#888;">
+          注：此选项仅影响汇率换算与本地售价显示，不影响平台费率
+        </div>
       </div>
 
       <div class="form-group">
@@ -331,6 +346,7 @@
     let CONFIG = null;
     let EXCHANGE_RATES = null;
     let LAST_EXCHANGE_UPDATE = null;
+    let CURRENT_CURRENCY = 'VND'; // 默认货币
 
     const CURRENCY_SYMBOLS = {
       'VND': '₫',
@@ -349,7 +365,7 @@
       return ` $ {year}- $ {month}- $ {day}  $ {hours}: $ {minutes}`;
     }
 
-    // 更新汇率徽章
+    // 更新汇率徽章（使用字符串拼接）
     function updateExchangeBadge(currency, rate) {
       const symbol = CURRENCY_SYMBOLS[currency] || currency;
       const html = 
@@ -358,7 +374,7 @@
       document.getElementById('live-exchange-badge').innerHTML = html;
     }
 
-    // 更新时间戳显示
+    // 更新时间戳显示（使用字符串拼接）
     function updateExchangeTimestamp() {
       if (!LAST_EXCHANGE_UPDATE) {
         document.getElementById('exchange-timestamp').innerHTML = 
@@ -372,9 +388,8 @@
       }
 
       const formattedTime = formatTimestamp(LAST_EXCHANGE_UPDATE);
-      document.getElementById('exchange-timestamp').innerHTML = `
-        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" 
-          stroke="currentColor" stroke-width="2">' +
+      document.getElementById('exchange-timestamp').innerHTML = 
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
           '<circle cx="12" cy="12" r="10"></circle>' +
           '<polyline points="12,6 12,12 16,14"></polyline>' +
         '</svg>' +
@@ -399,27 +414,30 @@
         
         select.disabled = false;
         document.getElementById('calcBtn').disabled = false;
+
+        // 初始化货币选择
+        document.getElementById('targetCurrency').value = 'VND';
+        CURRENT_CURRENCY = 'VND';
+        document.getElementById('targetCurrency').dispatchEvent(new Event('change'));
       } catch (err) {
         alert('❌ 无法加载 config.json');
         console.error(err);
       }
     }
 
-    // 加载汇率 + 记录时间
+    // 加载汇率
     async function loadExchangeRates() {
       try {
         const res = await fetch('https://api.exchangerate-api.com/v4/latest/CNY');
         const data = await res.json();
         EXCHANGE_RATES = data.rates;
-        
-        // ✅ 记录成功获取的时间（用户本地时间）
         LAST_EXCHANGE_UPDATE = new Date();
         
         const rate = EXCHANGE_RATES.VND || 3700;
         document.getElementById('exchangeRateInput').value = rate.toFixed(2);
         document.getElementById('exchangeRateInput').readOnly = false;
         updateExchangeBadge('VND', rate);
-        updateExchangeTimestamp(); // ✅ 显示时间戳
+        updateExchangeTimestamp();
       } catch (err) {
         console.warn('汇率API失败');
         document.getElementById('exchangeRateInput').value = '3700';
@@ -430,25 +448,21 @@
       }
     }
 
-    // 平台切换
-    document.getElementById('site').addEventListener('change', e => {
-      if (!EXCHANGE_RATES) return;
-      
-      const site = e.target.value;
-      if (!site) return;
-      
-      let targetCurrency = 'VND';
-      if (site.includes('th')) targetCurrency = 'THB';
-      if (site.includes('ph') || site.includes('菲律宾')) targetCurrency = 'PHP';
-      if (site.includes('my') || site.includes('马来西亚')) targetCurrency = 'MYR';
-      
-      const rate = EXCHANGE_RATES[targetCurrency] || 1;
-      document.getElementById('exchangeRateInput').value = rate.toFixed(2);
-      updateExchangeBadge(targetCurrency, rate);
-      // 注意：不更新时间戳，因为数据仍是上次获取的
+    // 货币切换监听
+    document.getElementById('targetCurrency').addEventListener('change', e => {
+      const currency = e.target.value;
+      CURRENT_CURRENCY = currency;
+      if (EXCHANGE_RATES) {
+        const rate = EXCHANGE_RATES[currency] || 1;
+        document.getElementById('exchangeRateInput').value = rate.toFixed(2);
+        updateExchangeBadge(currency, rate);
+      } else {
+        const currentRate = parseFloat(document.getElementById('exchangeRateInput').value) || 1;
+        updateExchangeBadge(currency, currentRate);
+      }
     });
 
-    // 泰国运费
+    // 泰国跨境运费
     function getThailandShipping(weight) {
       const base = CONFIG.shipping.th_cross_base;
       if (weight <= 100) return base["100"];
@@ -457,23 +471,21 @@
       return base["1000"];
     }
 
-    // 计算
+    // 计算主函数
     function calculate() {
       if (!CONFIG) { alert('配置未加载完成'); return; }
       
       const site = document.getElementById('site').value;
-      let commission = 0, fee = 0, serviceFee = 0, exchangeRate = 1, shippingRMB = 0;
+      let commission = 0, fee = 0, serviceFee = 0, shippingRMB = 0;
       const weight = parseFloat(document.getElementById('weight').value) || 100;
 
-      exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 1;
-
-      let currencyCode = 'VND';
-      if (site.includes('th')) currencyCode = 'THB';
-      else if (site.includes('ph') || site.includes('菲律宾')) currencyCode = 'PHP';
-      else if (site.includes('my') || site.includes('马来西亚')) currencyCode = 'MYR';
+      // ✅ 关键：使用独立选择的货币
+      const currencyCode = CURRENT_CURRENCY;
+      const exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 1;
 
       updateExchangeBadge(currencyCode, exchangeRate);
 
+      // 平台逻辑（只影响费率和物流）
       if (site && CONFIG.platforms[site]) {
         const plat = CONFIG.platforms[site];
         ({commission, fee, serviceFee} = plat);
@@ -484,8 +496,10 @@
           shippingRMB = vnShip / exchangeRate;
         } else if (plat.shippingType === 'th_cross') {
           shippingRMB = getThailandShipping(weight);
-        } else if (plat.shippingType === 'th_local') {
-          shippingRMB = 1.0;
+        } else if (plat.shippingType === 'th_local' || plat.shippingType === 'vn_local') {
+          shippingRMB = 1.0; // 本土店假设本地发货
+        } else {
+          shippingRMB = 2.0; // 默认
         }
       } else {
         commission = 5; fee = 2; serviceFee = 0;
@@ -544,4 +558,3 @@
   </script>
 </body>
 </html>
-
