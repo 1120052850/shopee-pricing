@@ -6,7 +6,7 @@
     <title>东南亚电商定价计算器</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 优化后的样式 */
+        /* 样式代码保持不变，与之前的相同 */
         * {
             margin: 0;
             padding: 0;
@@ -787,9 +787,9 @@
                         <div class="fee-item">
                             <div class="fee-compact">
                                 <span class="fee-name">总收入（本地）：</span>
-                                <span class="fee-amount" id="totalRevenueLocalValue">58,868 VND</span>
+                                <span class="fee-amount" id="totalRevenueLocalValue">46,008 VND</span>
                             </div>
-                            <div class="fee-local" id="totalRevenueLocal">≈ ¥15.91</div>
+                            <div class="fee-local" id="totalRevenueLocal">≈ ¥12.43</div>
                         </div>
                     </div>
                     
@@ -867,6 +867,15 @@
         // 当前选择的平台
         let currentPlatform = 'shopee-vn';
         
+        // 干线价卡数据（简化版）
+        const shippingPriceTable = {
+            'shopee-vn': {
+                10: 0, 20: 0, 30: 0, 40: 560, 50: 1200, 60: 1840, 70: 2480, 80: 3120, 90: 3760, 100: 3000,
+                110: 3640, 120: 4280, 130: 4920, 140: 5560, 150: 6200, 160: 6840, 170: 7480, 180: 8120, 190: 8760, 200: 9400,
+                210: 10040, 220: 10680, 230: 11320, 240: 11960, 250: 12600
+            }
+        };
+        
         // DOM元素
         const platformSelect = document.getElementById('platformSelect');
         const siteSelect = document.getElementById('siteSelect');
@@ -926,14 +935,27 @@
         
         // 四舍五入函数（与Excel的ROUND函数一致）
         function roundExcel(value, precision) {
-            if (precision === undefined || precision === null) {
+            if (precision === undefined || precision === null || isNaN(precision)) {
                 return Math.round(value);
             }
             const multiplier = Math.pow(10, precision);
             return Math.round(value * multiplier) / multiplier;
         }
         
-        // 加载配置文件 - 完全按照Excel表格数据
+        // 查找干线运费（针对Shopee越南跨境）
+        function lookupShippingFee(weight) {
+            const table = shippingPriceTable['shopee-vn'];
+            // 找到最接近的重量阶梯（向下取整）
+            let closestWeight = 10;
+            for (let w = 10; w <= weight; w += 10) {
+                if (table[w] !== undefined) {
+                    closestWeight = w;
+                }
+            }
+            return table[closestWeight] || 0;
+        }
+        
+        // 加载配置文件
         async function loadConfig() {
             try {
                 // 尝试从config.json文件加载配置
@@ -944,7 +966,7 @@
                 currentConfig = await response.json();
                 console.log('配置文件加载成功');
             } catch (error) {
-                console.warn('无法加载config.json文件，使用默认配置（完全对齐表格）:', error);
+                console.warn('无法加载config.json文件，使用默认配置:', error);
                 // 创建默认配置 - 完全按照Excel表格数据
                 currentConfig = {
                     platforms: {
@@ -1306,6 +1328,187 @@
             modeInfo.innerHTML = info;
         }
         
+        // 修正：计算单件费用详情 - 完全按照Excel公式
+        function calculateSingleItemFees(config, price, weight, exchangeRate, quantity = 1) {
+            // 确定套装加购费率（根据Excel表格）
+            // 第1件：套装加购为0，第2件起：套装加购为售价的2%
+            let bundleRate = 0;
+            if (quantity > 1) {
+                bundleRate = 0.02;
+            }
+            
+            // 总售价
+            const totalPrice = price * quantity;
+            
+            // 套装加购金额
+            const bundleDiscount = totalPrice * bundleRate;
+            
+            // 优惠券金额（根据Excel公式）
+            let couponDiscount = 0;
+            
+            // 根据平台和数量确定优惠券计算方式
+            if (quantity === 1) {
+                // 第1件：根据平台确定
+                if (currentPlatform === 'shopee-vn' || currentPlatform === 'lazada-vn') {
+                    // 越南跨境第1件：优惠券为0
+                    couponDiscount = 0;
+                } else if (currentPlatform === 'shopee-th' || currentPlatform === 'shopee-th-local' || 
+                           currentPlatform.includes('lazada')) {
+                    // 泰国跨境/本土/海运第1件：优惠券 = (售价-套装加购)*优惠券费率
+                    couponDiscount = (price - (bundleDiscount / quantity)) * config.couponRate;
+                }
+            } else {
+                // 第2件起：统一使用 (总售价-套装加购)*优惠券费率
+                couponDiscount = (totalPrice - bundleDiscount) * config.couponRate;
+            }
+            
+            // 计算基数：总售价 - 优惠券 - 套装加购（与Excel公式一致）
+            const baseAmount = totalPrice - couponDiscount - bundleDiscount;
+            
+            // 各项费用（按照Excel公式，四舍五入到指定精度）
+            const transactionFee = roundExcel(baseAmount * config.transactionFeeRate, config.precision);
+            const fcssFee = roundExcel(baseAmount * config.fcssRate, config.precision);
+            const commission = roundExcel(baseAmount * config.commissionRate, config.precision);
+            
+            // 超级联盟（Excel公式: (总售价-优惠券-套装加购)*superAllianceRate）
+            const superAlliance = roundExcel(baseAmount * config.superAllianceRate, config.precision);
+            
+            // 活动佣金（仅Lazada有）
+            const activityCommission = currentPlatform.includes('lazada') ? 
+                roundExcel(baseAmount * config.activityCommissionRate, config.precision) : 0;
+            
+            // 金币抵扣（仅Lazada有）
+            const coinDeduction = currentPlatform.includes('lazada') ? 
+                roundExcel(baseAmount * config.coinDeductionRate, config.precision) : 0;
+            
+            // 平台费（固定值，但Lazada越南跨境第2-5件不同）
+            let platformFee = config.platformFee;
+            if (currentPlatform === 'lazada-vn' && quantity > 1) {
+                platformFee = 3000; // 第2-5件平台费为3000 VND
+            }
+            
+            // 仓储成本（固定值）
+            const storageCost = config.storageCost * quantity;
+            
+            // 干线运费
+            let shippingCostVND = 0;
+            let shippingCostRMB = 0;
+            
+            if (currentPlatform === 'shopee-vn') {
+                // Shopee越南跨境：需要查询干线价卡表
+                const totalWeight = weight * quantity;
+                shippingCostVND = lookupShippingFee(totalWeight);
+                shippingCostRMB = shippingCostVND / exchangeRate;
+            } else if (currentPlatform === 'shopee-th') {
+                // Shopee泰国跨境：重量 × 0.006 RMB/g
+                shippingCostRMB = weight * quantity * 0.006;
+            } else if (currentPlatform === 'shopee-th-local') {
+                // Shopee泰国本土：重量 × 0.0095 RMB/g
+                shippingCostRMB = weight * quantity * 0.0095;
+            } else if (currentPlatform === 'lazada-vn') {
+                // Lazada越南跨境：重量 × 0.008 RMB/g
+                shippingCostRMB = weight * quantity * 0.008;
+            } else if (currentPlatform === 'lazada-th') {
+                // Lazada泰国跨境：重量 × 0.025 RMB/g
+                shippingCostRMB = weight * quantity * 0.025;
+            } else if (currentPlatform === 'lazada-th-sea') {
+                // Lazada泰国海运：重量 × 0.006 RMB/g
+                shippingCostRMB = weight * quantity * 0.006;
+            }
+            
+            // 尾程运费（仅Lazada）
+            let lastMileCost = 0;
+            if (currentPlatform.includes('lazada')) {
+                const totalWeight = weight * quantity;
+                if (currentPlatform === 'lazada-vn') {
+                    // 越南跨境尾程运费（根据重量阶梯）
+                    if (totalWeight <= 300) {
+                        lastMileCost = 2.65;
+                    } else if (totalWeight <= 1000) {
+                        lastMileCost = 4.2;
+                    } else {
+                        lastMileCost = 4.7;
+                    }
+                } else {
+                    // 泰国跨境/海运尾程运费：固定3 RMB
+                    lastMileCost = 3 * quantity;
+                }
+            }
+            
+            // 补贴（仅Lazada有）
+            let subsidy = 0;
+            if (currentPlatform.includes('lazada')) {
+                subsidy = config.subsidy * quantity;
+            }
+            
+            // 总收入计算 - 完全按照Excel公式
+            // 总收入（本地）= 总售价 - 交易手续费 - FCSS服务费 - 佣金 - 优惠券 - 套装加购 - 超级联盟 - 活动佣金 - 金币抵扣 - 平台费 + 补贴
+            let totalRevenueLocal = totalPrice - transactionFee - fcssFee - commission - couponDiscount - bundleDiscount - superAlliance - platformFee;
+            
+            // Lazada需要减去活动佣金和金币抵扣，加上补贴
+            if (currentPlatform.includes('lazada')) {
+                totalRevenueLocal = totalRevenueLocal - activityCommission - coinDeduction + subsidy;
+            }
+            
+            // 总收入（人民币）
+            const totalRevenueRMB = totalRevenueLocal / exchangeRate;
+            
+            return {
+                transactionFee,
+                fcssFee,
+                commission,
+                superAlliance,
+                activityCommission,
+                coinDeduction,
+                platformFee,
+                storageCost,
+                shippingCostVND,
+                shippingCostRMB,
+                couponDiscount,
+                bundleDiscount,
+                lastMileCost,
+                subsidy,
+                totalRevenueLocal,
+                totalRevenueRMB,
+                totalPrice
+            };
+        }
+        
+        // 修正：计算利润 - 完全按照Excel表格
+        function calculateProfit(config, price, purchasePrice, weight, exchangeRate, discount, quantity) {
+            // 使用与Excel完全相同的单件费用计算
+            const singleItemResult = calculateSingleItemFees(config, price, weight, exchangeRate, quantity);
+            
+            // 采购成本（RMB）
+            const purchaseCost = purchasePrice * quantity;
+            
+            // 总成本（RMB）- 完全按照Excel公式：采购价 + 仓储成本 + 干线运费
+            let totalCost = purchaseCost + singleItemResult.storageCost + singleItemResult.shippingCostRMB;
+            
+            // Lazada需要加上尾程运费
+            if (currentPlatform.includes('lazada')) {
+                totalCost += singleItemResult.lastMileCost;
+            }
+            
+            // 总收入（RMB）- 从singleItemResult中获取（已经计算好）
+            const totalRevenueRMB = singleItemResult.totalRevenueRMB;
+            
+            // 毛利（RMB）
+            const profit = totalRevenueRMB - totalCost;
+            
+            // 毛利率
+            const profitRate = totalRevenueRMB > 0 ? profit / totalRevenueRMB : 0;
+            
+            return {
+                totalPrice: singleItemResult.totalPrice,
+                shippingCost: singleItemResult.shippingCostRMB,
+                totalRevenueRMB,
+                totalCost,
+                profit,
+                profitRate
+            };
+        }
+        
         // 计算并显示结果 - 完全按照Excel表格公式
         function calculateAndDisplay() {
             const config = platformConfigs[currentPlatform];
@@ -1358,125 +1561,6 @@
                 
                 resultTable.appendChild(row);
             }
-        }
-        
-        // 计算单件费用详情 - 完全按照Excel公式
-        function calculateSingleItemFees(config, price, weight, exchangeRate, quantity = 1) {
-            // 确定套装加购费率（根据Excel表格）
-            // 第1件：套装加购为0，第2件起：套装加购为售价的2%
-            let bundleRate = 0;
-            if (quantity > 1) {
-                bundleRate = 0.02;
-            }
-            
-            // 套装加购金额
-            const bundleDiscount = price * quantity * bundleRate;
-            
-            // 优惠券金额（根据Excel公式）
-            let couponDiscount = 0;
-            
-            // 根据平台和数量确定优惠券计算方式
-            if (quantity === 1) {
-                // 第1件：根据平台确定
-                if (currentPlatform === 'shopee-vn' || currentPlatform === 'lazada-vn') {
-                    // 越南跨境第1件：优惠券为0
-                    couponDiscount = 0;
-                } else if (currentPlatform === 'shopee-th' || currentPlatform === 'shopee-th-local' || 
-                           currentPlatform.includes('lazada')) {
-                    // 泰国跨境/本土/海运第1件：优惠券 = (售价-套装加购)*优惠券费率
-                    couponDiscount = (price * quantity - bundleDiscount) * config.couponRate;
-                }
-            } else {
-                // 第2件起：统一使用 (售价*数量-套装加购)*优惠券费率
-                couponDiscount = (price * quantity - bundleDiscount) * config.couponRate;
-            }
-            
-            // 计算基数：售价 - 优惠券 - 套装加购（与Excel公式一致）
-            const baseAmount = price * quantity - couponDiscount - bundleDiscount;
-            
-            // 各项费用（按照Excel公式，四舍五入到指定精度）
-            const transactionFee = roundExcel(baseAmount * config.transactionFeeRate, config.precision);
-            const fcssFee = roundExcel(baseAmount * config.fcssRate, config.precision);
-            const commission = roundExcel(baseAmount * config.commissionRate, config.precision);
-            
-            // 超级联盟（Excel公式: (售价-优惠券-套装加购)*superAllianceRate）
-            const superAllianceBase = price * quantity - couponDiscount - bundleDiscount;
-            const superAlliance = roundExcel(superAllianceBase * config.superAllianceRate, config.precision);
-            
-            // 活动佣金（仅Lazada有）
-            const activityCommission = currentPlatform.includes('lazada') ? 
-                roundExcel(superAllianceBase * config.activityCommissionRate, config.precision) : 0;
-            
-            // 金币抵扣（仅Lazada有）
-            const coinDeduction = currentPlatform.includes('lazada') ? 
-                roundExcel(superAllianceBase * config.coinDeductionRate, config.precision) : 0;
-            
-            // 平台费（固定值，但Lazada越南跨境第2-5件不同）
-            let platformFee = config.platformFee;
-            if (currentPlatform === 'lazada-vn' && quantity > 1) {
-                platformFee = 3000; // 第2-5件平台费为3000 VND
-            }
-            
-            // 仓储成本（固定值）
-            const storageCost = config.storageCost * quantity;
-            
-            // 干线运费
-            let shippingCost = 0;
-            if (currentPlatform === 'shopee-vn') {
-                // Shopee越南跨境：需要查询干线价卡表，这里用简化版本
-                // 基于100g对应3000 VND / 3700汇率 = 0.8108
-                shippingCost = weight * quantity * 0.0081;
-            } else if (currentPlatform === 'shopee-th') {
-                // Shopee泰国跨境：重量 × 0.006 RMB/g
-                shippingCost = weight * quantity * 0.006;
-            } else if (currentPlatform === 'shopee-th-local') {
-                // Shopee泰国本土：重量 × 0.0095 RMB/g
-                shippingCost = weight * quantity * 0.0095;
-            } else if (currentPlatform === 'lazada-vn') {
-                // Lazada越南跨境：重量 × 0.008 RMB/g
-                shippingCost = weight * quantity * 0.008;
-            } else if (currentPlatform === 'lazada-th') {
-                // Lazada泰国跨境：重量 × 0.025 RMB/g
-                shippingCost = weight * quantity * 0.025;
-            } else if (currentPlatform === 'lazada-th-sea') {
-                // Lazada泰国海运：重量 × 0.006 RMB/g
-                shippingCost = weight * quantity * 0.006;
-            }
-            
-            // 补贴（仅Lazada有）
-            let subsidy = 0;
-            if (currentPlatform.includes('lazada')) {
-                subsidy = config.subsidy * quantity;
-            }
-            
-            // 总收入计算 - 完全按照Excel公式
-            // 总收入（本地）= 售价 - 交易手续费 - FCSS服务费 - 佣金 - 优惠券 - 套装加购 - 超级联盟 - 活动佣金 - 金币抵扣 - 平台费 + 补贴
-            let totalRevenueLocal = price * quantity - transactionFee - fcssFee - commission - couponDiscount - bundleDiscount - superAlliance - platformFee;
-            
-            // Lazada需要减去活动佣金和金币抵扣，加上补贴
-            if (currentPlatform.includes('lazada')) {
-                totalRevenueLocal = totalRevenueLocal - activityCommission - coinDeduction + subsidy;
-            }
-            
-            // 总收入（人民币）
-            const totalRevenueRMB = totalRevenueLocal / exchangeRate;
-            
-            return {
-                transactionFee,
-                fcssFee,
-                commission,
-                superAlliance,
-                activityCommission,
-                coinDeduction,
-                platformFee,
-                storageCost,
-                shippingCost,
-                couponDiscount,
-                bundleDiscount,
-                subsidy,
-                totalRevenueLocal,
-                totalRevenueRMB
-            };
         }
         
         // 更新费用详情显示
@@ -1595,93 +1679,69 @@
             }
             
             storageCostValue.textContent = `${formatCurrency(result.storageCost)}`;
-            shippingCostValue.textContent = `${formatCurrency(result.shippingCost)}`;
             
-            // 更新干线运费参数显示
-            const weight = parseFloat(weightInput.value);
-            let rate = 0;
-            let formula = "";
-            
+            // 更新干线运费显示
             if (currentPlatform === 'shopee-vn') {
-                rate = 0.0081;
-                formula = "重量 × 0.0081 RMB/g (基于100g对应3000 VND / 3700汇率)";
-            } else if (currentPlatform === 'shopee-th') {
-                rate = 0.006;
-                formula = "重量 × 0.006 RMB/g";
-            } else if (currentPlatform === 'shopee-th-local') {
-                rate = 0.0095;
-                formula = "重量 × 0.0095 RMB/g";
-            } else if (currentPlatform === 'lazada-vn') {
-                rate = 0.008;
-                formula = "重量 × 0.008 RMB/g";
-            } else if (currentPlatform === 'lazada-th') {
-                rate = 0.025;
-                formula = "重量 × 0.025 RMB/g";
-            } else if (currentPlatform === 'lazada-th-sea') {
-                rate = 0.006;
-                formula = "重量 × 0.006 RMB/g";
+                shippingCostValue.textContent = `${formatCurrency(result.shippingCostRMB)}`;
+                shippingParams.innerHTML = `参数：${result.shippingCostVND} VND / ${exchangeRate} = ${formatCurrency(result.shippingCostRMB)}`;
+                shippingFormula.textContent = `公式：VLOOKUP(${weightInput.value}g, 干线价卡表, 2, 0) / ${exchangeRate} = ${result.shippingCostVND} / ${exchangeRate}`;
+            } else {
+                shippingCostValue.textContent = `${formatCurrency(result.shippingCostRMB)}`;
+                
+                let rate = 0;
+                let formula = "";
+                
+                if (currentPlatform === 'shopee-th') {
+                    rate = 0.006;
+                    formula = `重量 × 0.006 RMB/g = ${weightInput.value}g × 0.006`;
+                } else if (currentPlatform === 'shopee-th-local') {
+                    rate = 0.0095;
+                    formula = `重量 × 0.0095 RMB/g = ${weightInput.value}g × 0.0095`;
+                } else if (currentPlatform === 'lazada-vn') {
+                    rate = 0.008;
+                    formula = `重量 × 0.008 RMB/g = ${weightInput.value}g × 0.008`;
+                } else if (currentPlatform === 'lazada-th') {
+                    rate = 0.025;
+                    formula = `重量 × 0.025 RMB/g = ${weightInput.value}g × 0.025`;
+                } else if (currentPlatform === 'lazada-th-sea') {
+                    rate = 0.006;
+                    formula = `重量 × 0.006 RMB/g = ${weightInput.value}g × 0.006`;
+                }
+                
+                shippingParams.innerHTML = `参数：${weightInput.value}g × ¥${rate.toFixed(4)}/g = ${formatCurrency(result.shippingCostRMB)}`;
+                shippingFormula.textContent = `公式：${formula}`;
             }
             
-            shippingParams.innerHTML = `参数：${weight}g × ¥${rate.toFixed(4)}/g = ${formatCurrency(result.shippingCost)}`;
-            shippingFormula.textContent = `公式：${formula}`;
+            // 更新尾程运费（仅Lazada）
+            if (currentPlatform.includes('lazada')) {
+                let lastMileEl = document.getElementById('lastMileCostValue');
+                if (!lastMileEl) {
+                    // 创建尾程运费行
+                    const lastMileItem = document.createElement('div');
+                    lastMileItem.className = 'fee-item';
+                    lastMileItem.innerHTML = `
+                        <div class="fee-compact">
+                            <span class="fee-name">尾程运费：</span>
+                            <span class="fee-amount" id="lastMileCostValue">¥0.00</span>
+                        </div>
+                    `;
+                    
+                    // 插入到干线运费后面
+                    const shippingItem = document.querySelector('.fee-item:nth-last-child(3)');
+                    shippingItem.insertAdjacentElement('afterend', lastMileItem);
+                }
+                
+                document.getElementById('lastMileCostValue').textContent = `${formatCurrency(result.lastMileCost)}`;
+            } else {
+                // 如果不是Lazada，移除尾程运费行
+                const lastMileEl = document.getElementById('lastMileCostValue');
+                if (lastMileEl) {
+                    lastMileEl.closest('.fee-item').remove();
+                }
+            }
             
             totalRevenueLocalValue.textContent = `${formatNumber(result.totalRevenueLocal)} ${config.currency}`;
             totalRevenueLocal.textContent = `≈ ${formatCurrency(result.totalRevenueRMB)}`;
-        }
-        
-        // 计算利润 - 完全按照Excel表格
-        function calculateProfit(config, price, purchasePrice, weight, exchangeRate, discount, quantity) {
-            // 总售价（本地货币）
-            const totalPrice = price * quantity;
-            
-            // 采购成本（RMB）
-            const purchaseCost = purchasePrice * quantity;
-            
-            // 使用与Excel完全相同的单件费用计算
-            const singleItemResult = calculateSingleItemFees(config, price, weight, exchangeRate, quantity);
-            
-            // 总成本（RMB）
-            let totalCost = purchaseCost + singleItemResult.storageCost + singleItemResult.shippingCost;
-            
-            // Lazada需要加上尾程运费
-            if (currentPlatform.includes('lazada')) {
-                let lastMileCost = 0;
-                const totalWeight = weight * quantity;
-                
-                if (currentPlatform === 'lazada-vn') {
-                    // 越南跨境尾程运费（根据重量阶梯）
-                    if (totalWeight <= 300) {
-                        lastMileCost = 2.65;
-                    } else if (totalWeight <= 1000) {
-                        lastMileCost = 4.2;
-                    } else {
-                        lastMileCost = 4.7;
-                    }
-                } else if (currentPlatform === 'lazada-th' || currentPlatform === 'lazada-th-sea') {
-                    // 泰国跨境/海运尾程运费：固定3 RMB
-                    lastMileCost = 3 * quantity;
-                }
-                
-                totalCost += lastMileCost;
-            }
-            
-            // 总收入（RMB）
-            const totalRevenueRMB = singleItemResult.totalRevenueRMB;
-            
-            // 毛利（RMB）
-            const profit = totalRevenueRMB - totalCost;
-            
-            // 毛利率
-            const profitRate = totalRevenueRMB > 0 ? profit / totalRevenueRMB : 0;
-            
-            return {
-                totalPrice,
-                shippingCost: singleItemResult.shippingCost,
-                totalRevenueRMB,
-                totalCost,
-                profit,
-                profitRate
-            };
         }
         
         // 打开设置模态框
