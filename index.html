@@ -1270,32 +1270,45 @@
         function updatePlatformSelection() {
             const platform = platformSelect.value;
             const site = siteSelect.value;
+            console.log('updatePlatformSelection called:', { platform, site });
 
-            // 根据平台更新站点选择器选项
-            updateSiteOptions(platform);
+            // 根据平台更新站点选择器选项，并保留当前选中的站点值
+            updateSiteOptions(platform, site);
+
+            // 使用更新后的站点值
+            const currentSite = siteSelect.value;
+            console.log('Current site after update:', currentSite);
 
             // 根据平台和站点确定当前平台
             if (platform === 'shopee') {
-                if (site === 'th-local') {
+                if (currentSite === 'th-local') {
                     currentPlatform = 'shopee-th-local';
                 } else {
-                    currentPlatform = `shopee-${site}`;
+                    currentPlatform = `shopee-${currentSite}`;
                 }
             } else if (platform === 'lazada') {
-                if (site === 'th-sea') {
+                if (currentSite === 'th-sea') {
                     currentPlatform = 'lazada-th-sea';
                 } else {
-                    currentPlatform = `lazada-${site}`;
+                    currentPlatform = `lazada-${currentSite}`;
                 }
+            } else {
+                currentPlatform = 'shopee-vn'; // 默认值
             }
+            
+            console.log('Current platform determined:', currentPlatform);
             
             // 更新输入框的默认值
             const config = platformConfigs[currentPlatform];
-            priceInput.value = config.defaultPrice;
-            purchasePriceInput.value = config.defaultPurchase;
-            weightInput.value = config.defaultWeight;
-            exchangeRateInput.value = config.defaultExchange;
-            currencyUnitEl.textContent = config.currency;
+            if (config) {
+                priceInput.value = config.defaultPrice;
+                purchasePriceInput.value = config.defaultPurchase;
+                weightInput.value = config.defaultWeight;
+                exchangeRateInput.value = config.defaultExchange;
+                currencyUnitEl.textContent = config.currency;
+            } else {
+                console.error('No config found for platform:', currentPlatform);
+            }
             
             // 更新模式信息
             updateModeInfo(config);
@@ -1305,7 +1318,10 @@
         }
         
         // 根据平台更新站点选择器选项
-        function updateSiteOptions(platform) {
+        function updateSiteOptions(platform, selectedSite) {
+            // 保存当前选中的站点值
+            const savedSite = selectedSite || siteSelect.value;
+            console.log('updateSiteOptions called:', { platform, selectedSite, savedSite, currentSiteValue: siteSelect.value });
             siteSelect.innerHTML = ''; // 清空现有选项
 
             if (platform === 'shopee') {
@@ -1315,6 +1331,7 @@
                     <option value="th">泰国跨境</option>
                     <option value="th-local">泰国本土</option>
                 `;
+                console.log('Set Shopee options');
             } else if (platform === 'lazada') {
                 // Lazada有3个站点：越南跨境、泰国跨境、泰国海运
                 siteSelect.innerHTML = `
@@ -1322,6 +1339,28 @@
                     <option value="th">泰国跨境</option>
                     <option value="th-sea">泰国海运</option>
                 `;
+                console.log('Set Lazada options');
+            } else {
+                // 未知平台，清空选项
+                siteSelect.innerHTML = '';
+                console.log('Cleared options for unknown platform');
+            }
+            
+            // 检查保存的站点值是否在新选项中存在
+            const options = Array.from(siteSelect.options);
+            const optionExists = options.some(opt => opt.value === savedSite);
+            console.log('Options available:', options.map(opt => opt.value), 'Saved site:', savedSite, 'Exists:', optionExists);
+            
+            if (optionExists && savedSite) {
+                siteSelect.value = savedSite;
+                console.log('Set siteSelect.value to savedSite:', savedSite);
+            } else if (options.length > 0) {
+                const firstOptionValue = options[0].value;
+                siteSelect.value = firstOptionValue;
+                console.log('Set siteSelect.value to first option:', firstOptionValue);
+            } else {
+                siteSelect.value = '';
+                console.log('No options available, set value to empty');
             }
         }
 
