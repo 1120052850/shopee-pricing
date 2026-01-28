@@ -1644,6 +1644,7 @@
         // 计算并显示结果 - 完全按照Excel表格公式
         function calculateAndDisplay() {
             const config = platformConfigs[currentPlatform];
+            console.log(`calculateAndDisplay: currentPlatform=${currentPlatform}, transactionFeeRate=${config.transactionFeeRate}, fcssRate=${config.fcssRate}, commissionRate=${config.commissionRate}`);
             const price = parseFloat(priceInput.value);
             const purchasePrice = parseFloat(purchasePriceInput.value);
             const weight = parseFloat(weightInput.value);
@@ -1697,6 +1698,7 @@
         
         // 更新费用详情显示
         function updateFeeDetails(config, result, exchangeRate) {
+            console.log(`updateFeeDetails: transactionFeeRate=${config.transactionFeeRate}, 显示=${(config.transactionFeeRate * 100).toFixed(2)}%`);
             // 更新百分比显示
             transactionFeePercentage.textContent = ` (${(config.transactionFeeRate * 100).toFixed(2)}%)`;
             fcssFeePercentage.textContent = ` (${(config.fcssRate * 100).toFixed(2)}%)`;
@@ -1971,10 +1973,32 @@
             Object.keys(platformConfigs).forEach(platformId => {
                 const config = platformConfigs[platformId];
                 
-                config.transactionFeeRate = parseFloat(document.getElementById(`${platformId}_transactionFee`).value) / 100;
-                config.fcssRate = parseFloat(document.getElementById(`${platformId}_fcssFee`).value) / 100;
-                config.commissionRate = parseFloat(document.getElementById(`${platformId}_commission`).value) / 100;
-                config.couponRate = parseFloat(document.getElementById(`${platformId}_coupon`).value) / 100;
+                const transactionFeeInput = document.getElementById(`${platformId}_transactionFee`).value.trim();
+                const transactionFeeValue = parseFloat(transactionFeeInput);
+                if (!isNaN(transactionFeeValue)) {
+                    config.transactionFeeRate = transactionFeeValue / 100;
+                    console.log(`保存 ${platformId} 交易手续费: 输入值=${transactionFeeInput}, 费率=${config.transactionFeeRate}`);
+                } else {
+                    console.error(`无效的交易手续费输入: ${transactionFeeInput}`);
+                }
+                
+                const fcssFeeInput = document.getElementById(`${platformId}_fcssFee`).value.trim();
+                const fcssFeeValue = parseFloat(fcssFeeInput);
+                if (!isNaN(fcssFeeValue)) {
+                    config.fcssRate = fcssFeeValue / 100;
+                }
+                
+                const commissionInput = document.getElementById(`${platformId}_commission`).value.trim();
+                const commissionValue = parseFloat(commissionInput);
+                if (!isNaN(commissionValue)) {
+                    config.commissionRate = commissionValue / 100;
+                }
+                
+                const couponInput = document.getElementById(`${platformId}_coupon`).value.trim();
+                const couponValue = parseFloat(couponInput);
+                if (!isNaN(couponValue)) {
+                    config.couponRate = couponValue / 100;
+                }
                 
                 // 对于平台费、补贴和运费，需要检查是否是数字
                 const platformFeeValue = document.getElementById(`${platformId}_platformFee`).value;
@@ -1992,6 +2016,10 @@
                 // 更新平台配置
                 platformConfigs[platformId] = config;
             });
+            
+            // 调试：打印保存后的值
+            console.log('保存后 platformConfigs:', platformConfigs);
+            console.log('shopee-th transactionFeeRate:', platformConfigs['shopee-th']?.transactionFeeRate);
             
             // 更新当前配置
             currentConfig.platforms = platformConfigs;
