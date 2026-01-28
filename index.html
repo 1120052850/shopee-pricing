@@ -1029,7 +1029,7 @@
                                 transactionFee: "ROUND((售价-优惠券-套装加购)*3.21%,0)",
                                 fcssFee: "ROUND((售价-优惠券-套装加购)*5.35%,0)",
                                 commission: "ROUND((售价-优惠券-套装加购)*18.19%,0)",
-                                superAlliance: "ROUND((售价-优惠券-套装加购)*1%,0)",
+                                superAlliance: "ROUND((售价-优惠券-套装加购)*1%,1)",
                                 coupon: "(售价-套装加购)*5%",
                                 bundle: "售价*0% (第1件)"
                             }
@@ -1061,7 +1061,7 @@
                                 transactionFee: "ROUND((售价-优惠券-套装加购)*3.21%,0)",
                                 fcssFee: "ROUND((售价-优惠券-套装加购)*7.49%,0)",
                                 commission: "ROUND((售价-优惠券-套装加购)*8.56%,0)",
-                                superAlliance: "ROUND((售价-优惠券-套装加购)*1%,0)",
+                                superAlliance: "ROUND((售价-优惠券-套装加购)*1%,1)",
                                 coupon: "(售价-套装加购)*5%",
                                 bundle: "售价*0% (第1件)"
                             }
@@ -1120,7 +1120,7 @@
                             shippingRate: 0.025,
                             shippingFormula: "重量 × 0.025 RMB/g",
                             shippingDescription: "泰国跨境干线运费",
-                            precision: 1,
+                            precision: 2,
                             lastMileCost: 3,
                             subsidy: 29,
                             excelFormula: {
@@ -1154,7 +1154,7 @@
                             shippingRate: 0.006,
                             shippingFormula: "重量 × 0.006 RMB/g",
                             shippingDescription: "泰国海运干线运费",
-                            precision: 1,
+                            precision: 2,
                             lastMileCost: 3,
                             subsidy: 29,
                             excelFormula: {
@@ -1244,6 +1244,10 @@
         
         // 初始化 - 修复站点选项
         function initPlatformOptions() {
+            // 在清空之前保存当前选中的站点值
+            const savedSite = siteSelect.value;
+            console.log('initPlatformOptions: savedSite before clear:', savedSite);
+            
             // 清空站点选项
             siteSelect.innerHTML = '';
             
@@ -1260,6 +1264,17 @@
                     <option value="th">泰国跨境</option>
                     <option value="th-sea">泰国海运</option>
                 `;
+            }
+            
+            // 尝试恢复保存的站点值
+            const options = Array.from(siteSelect.options);
+            const optionExists = options.some(opt => opt.value === savedSite);
+            if (optionExists && savedSite) {
+                siteSelect.value = savedSite;
+                console.log('initPlatformOptions: restored siteSelect.value to:', savedSite);
+            } else if (options.length > 0) {
+                siteSelect.value = options[0].value;
+                console.log('initPlatformOptions: set siteSelect.value to first option:', options[0].value);
             }
             
             // 初始化平台选择
@@ -1322,11 +1337,12 @@
             // 保存当前选中的站点值
             const savedSite = selectedSite || siteSelect.value;
             console.log('updateSiteOptions called:', { platform, selectedSite, savedSite, currentSiteValue: siteSelect.value });
-            siteSelect.innerHTML = ''; // 清空现有选项
-
+            
+            // 确定应该显示哪些选项
+            let optionsHTML = '';
             if (platform === 'shopee') {
                 // Shopee有3个站点：越南跨境、泰国跨境、泰国本土
-                siteSelect.innerHTML = `
+                optionsHTML = `
                     <option value="vn">越南跨境</option>
                     <option value="th">泰国跨境</option>
                     <option value="th-local">泰国本土</option>
@@ -1334,7 +1350,7 @@
                 console.log('Set Shopee options');
             } else if (platform === 'lazada') {
                 // Lazada有3个站点：越南跨境、泰国跨境、泰国海运
-                siteSelect.innerHTML = `
+                optionsHTML = `
                     <option value="vn">越南跨境</option>
                     <option value="th">泰国跨境</option>
                     <option value="th-sea">泰国海运</option>
@@ -1342,20 +1358,34 @@
                 console.log('Set Lazada options');
             } else {
                 // 未知平台，清空选项
-                siteSelect.innerHTML = '';
+                optionsHTML = '';
                 console.log('Cleared options for unknown platform');
             }
             
-            // 检查保存的站点值是否在新选项中存在
-            const options = Array.from(siteSelect.options);
-            const optionExists = options.some(opt => opt.value === savedSite);
-            console.log('Options available:', options.map(opt => opt.value), 'Saved site:', savedSite, 'Exists:', optionExists);
+            // 获取当前选项以便检查
+            const currentOptions = Array.from(siteSelect.options);
+            const currentOptionValues = currentOptions.map(opt => opt.value);
             
-            if (optionExists && savedSite) {
+            // 检查保存的站点值是否在当前选项中存在（在清空之前检查）
+            const optionExistsBeforeClear = currentOptionValues.includes(savedSite);
+            console.log('Options before clear:', currentOptionValues, 'Saved site:', savedSite, 'Exists before clear:', optionExistsBeforeClear);
+            
+            // 清空现有选项并设置新选项
+            siteSelect.innerHTML = optionsHTML;
+            
+            // 检查保存的站点值是否在新选项中存在
+            const newOptions = Array.from(siteSelect.options);
+            const newOptionValues = newOptions.map(opt => opt.value);
+            const optionExists = newOptionValues.includes(savedSite);
+            console.log('Options after clear:', newOptionValues, 'Saved site:', savedSite, 'Exists after clear:', optionExists);
+            
+            // 设置选中的值
+            if (optionExists && savedSite && savedSite !== '') {
                 siteSelect.value = savedSite;
                 console.log('Set siteSelect.value to savedSite:', savedSite);
-            } else if (options.length > 0) {
-                const firstOptionValue = options[0].value;
+            } else if (newOptions.length > 0) {
+                // 如果保存的站点不存在，选择第一个选项
+                const firstOptionValue = newOptions[0].value;
                 siteSelect.value = firstOptionValue;
                 console.log('Set siteSelect.value to first option:', firstOptionValue);
             } else {
@@ -1448,7 +1478,9 @@
             const commissionExact = baseAmount * config.commissionRate;
             
             // 超级联盟（Excel公式: (总售价-优惠券-套装加购)*superAllianceRate）
-            const superAlliance = roundExcel(baseAmount * config.superAllianceRate, config.precision);
+            // 对于泰国平台，超级联盟使用1位小数精度，其他平台使用config.precision
+            const superAlliancePrecision = (currentPlatform === 'shopee-th' || currentPlatform === 'shopee-th-local') ? 1 : config.precision;
+            const superAlliance = roundExcel(baseAmount * config.superAllianceRate, superAlliancePrecision);
             const superAllianceExact = baseAmount * config.superAllianceRate;
             
             // 活动佣金（仅Lazada有）
@@ -1462,6 +1494,15 @@
                 roundExcel(baseAmount * config.coinDeductionRate, config.precision) : 0;
             const coinDeductionExact = currentPlatform.includes('lazada') ? 
                 baseAmount * config.coinDeductionRate : 0;
+            
+            console.log('coinDeduction debug:', {
+                currentPlatform,
+                baseAmount,
+                coinDeductionRate: config.coinDeductionRate,
+                precision: config.precision,
+                coinDeduction,
+                coinDeductionExact
+            });
             
             // 平台费（固定值，但Lazada越南跨境第2-5件不同）
             let platformFee = config.platformFee; // 默认为固定值，不随件数变化
@@ -1849,9 +1890,9 @@
             // 通用设置字段
             const generalFields = [
                 { id: 'storageCostSetting', label: '仓储成本 (RMB)', value: currentConfig.generalSettings.storageCost },
-                { id: 'superAllianceRateSetting', label: '超级联盟 (%)', value: currentConfig.generalSettings.superAllianceRate * 100 },
-                { id: 'activityCommissionRateSetting', label: '活动佣金 (%)', value: currentConfig.generalSettings.activityCommissionRate * 100 },
-                { id: 'coinDeductionRateSetting', label: '金币抵扣 (%)', value: currentConfig.generalSettings.coinDeductionRate * 100 }
+                { id: 'superAllianceRateSetting', label: '超级联盟 (%)', value: (currentConfig.generalSettings.superAllianceRate * 100).toFixed(2) },
+                { id: 'activityCommissionRateSetting', label: '活动佣金 (%)', value: (currentConfig.generalSettings.activityCommissionRate * 100).toFixed(2) },
+                { id: 'coinDeductionRateSetting', label: '金币抵扣 (%)', value: (currentConfig.generalSettings.coinDeductionRate * 100).toFixed(2) }
             ];
             
             generalFields.forEach(field => {
@@ -1886,10 +1927,10 @@
                 
                 // 平台特定字段
                 const platformFields = [
-                    { id: `${platformId}_transactionFee`, label: '交易手续费 (%)', value: config.transactionFeeRate * 100 },
-                    { id: `${platformId}_fcssFee`, label: 'FCSS+CCB服务费 (%)', value: config.fcssRate * 100 },
-                    { id: `${platformId}_commission`, label: '佣金 (%)', value: config.commissionRate * 100 },
-                    { id: `${platformId}_coupon`, label: '优惠券 (%)', value: config.couponRate * 100 },
+                    { id: `${platformId}_transactionFee`, label: '交易手续费 (%)', value: (config.transactionFeeRate * 100).toFixed(2) },
+                    { id: `${platformId}_fcssFee`, label: 'FCSS+CCB服务费 (%)', value: (config.fcssRate * 100).toFixed(2) },
+                    { id: `${platformId}_commission`, label: '佣金 (%)', value: (config.commissionRate * 100).toFixed(2) },
+                    { id: `${platformId}_coupon`, label: '优惠券 (%)', value: (config.couponRate * 100).toFixed(2) },
                     { id: `${platformId}_platformFee`, label: `平台费 (${config.currency})`, value: config.platformFee },
                     { id: `${platformId}_shippingRate`, label: '干线运费 (RMB/g)', value: config.shippingRate },
                     { id: `${platformId}_subsidy`, label: `补贴 (${config.currency})`, value: config.subsidy },
@@ -2070,9 +2111,10 @@
         
         // 格式化数字（本地货币）
         function formatNumber(value) {
+            // 始终显示两位小数，以匹配CSV格式
             return value.toLocaleString('zh-CN', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
             });
         }
         
