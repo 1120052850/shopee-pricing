@@ -17,20 +17,12 @@
       "couponRate": 0,
       "bundleRate": 0,
       "platformFee": 13800,
-      "shippingRate": 0.0081,
-      "shippingFormula": "根据重量查询干线价卡表 / 汇率",
+      "shippingRate": "vlookup",
+      "shippingFormula": "VLOOKUP(重量, 干线价卡表, 2, 0) / 汇率",
       "shippingDescription": "越南跨境干线按重量阶梯计算",
-      "precision": 0,
       "lastMileCost": 0,
       "subsidy": 0,
-      "excelFormula": {
-        "transactionFee": "ROUND((售价-优惠券-套装加购)*4.91%,0)",
-        "fcssFee": "ROUND((售价-优惠券-套装加购)*5%,0)",
-        "commission": "ROUND((售价-优惠券-套装加购)*15.33%,0)",
-        "superAlliance": "ROUND((售价-优惠券-套装加购)*1%,0)",
-        "coupon": "售价*0%",
-        "bundle": "售价*0%"
-      }
+      "precision": 0
     },
     "shopee-th": {
       "name": "Shopee泰国跨境",
@@ -52,17 +44,7 @@
       "shippingRate": 0.006,
       "shippingFormula": "重量 × 0.006 RMB/g",
       "shippingDescription": "泰国跨境干线运费",
-      "precision": 0,
-      "lastMileCost": 0,
-      "subsidy": 0,
-      "excelFormula": {
-        "transactionFee": "ROUND((售价-优惠券-套装加购)*3.21%,0)",
-        "fcssFee": "ROUND((售价-优惠券-套装加购)*5.35%,0)",
-        "commission": "ROUND((售价-优惠券-套装加购)*18.19%,0)",
-        "superAlliance": "ROUND((售价-优惠券-套装加购)*1%,0)",
-        "coupon": "(售价-套装加购)*5%",
-        "bundle": "售价*0% (第1件)"
-      }
+      "precision": 0
     },
     "shopee-th-local": {
       "name": "Shopee泰国本土",
@@ -84,17 +66,7 @@
       "shippingRate": 0.0095,
       "shippingFormula": "重量 × 0.0095 RMB/g",
       "shippingDescription": "泰国本土干线运费",
-      "precision": 0,
-      "lastMileCost": 0,
-      "subsidy": 0,
-      "excelFormula": {
-        "transactionFee": "ROUND((售价-优惠券-套装加购)*3.21%,0)",
-        "fcssFee": "ROUND((售价-优惠券-套装加购)*7.49%,0)",
-        "commission": "ROUND((售价-优惠券-套装加购)*8.56%,0)",
-        "superAlliance": "ROUND((售价-优惠券-套装加购)*1%,0)",
-        "coupon": "(售价-套装加购)*5%",
-        "bundle": "售价*0% (第1件)"
-      }
+      "precision": 0
     },
     "lazada-vn": {
       "name": "Lazada越南跨境",
@@ -111,24 +83,16 @@
       "activityCommissionRate": 0.01,
       "coinDeductionRate": 0.01,
       "couponRate": 0,
+      "couponRateMultiItem": 0.05,
       "bundleRate": 0,
       "platformFee": 13800,
+      "platformFeeMultiItem": 3000,
       "shippingRate": 0.008,
       "shippingFormula": "重量 × 0.008 RMB/g",
       "shippingDescription": "越南跨境干线运费",
-      "precision": 0,
       "lastMileCost": 2.65,
       "subsidy": 10500,
-      "excelFormula": {
-        "transactionFee": "ROUND((售价-优惠券-套装加购)*4.15%,0)",
-        "fcssFee": "ROUND((售价-优惠券-套装加购)*0%,0)",
-        "commission": "ROUND((售价-优惠券-套装加购)*13.35%,0)",
-        "superAlliance": "ROUND((售价-优惠券-套装加购)*1%,0)",
-        "activityCommission": "ROUND((售价-优惠券-套装加购)*1%,0)",
-        "coinDeduction": "ROUND((售价-优惠券-套装加购)*1%,0)",
-        "coupon": "售价*0%",
-        "bundle": "售价*0%"
-      }
+      "precision": 0
     },
     "lazada-th": {
       "name": "Lazada泰国跨境",
@@ -150,19 +114,9 @@
       "shippingRate": 0.025,
       "shippingFormula": "重量 × 0.025 RMB/g",
       "shippingDescription": "泰国跨境干线运费",
-      "precision": 1,
       "lastMileCost": 3,
       "subsidy": 29,
-      "excelFormula": {
-        "transactionFee": "ROUND((售价-优惠券-套装加购)*3.21%,1)",
-        "fcssFee": "ROUND((售价-优惠券-套装加购)*4%,1)",
-        "commission": "ROUND((售价-优惠券-套装加购)*11.24%,1)",
-        "superAlliance": "ROUND((售价-优惠券-套装加购)*1%,1)",
-        "activityCommission": "ROUND((售价-优惠券-套装加购)*1%,1)",
-        "coinDeduction": "ROUND((售价-优惠券-套装加购)*1%,1)",
-        "coupon": "(售价-套装加购)*5%",
-        "bundle": "售价*0% (第1件)"
-      }
+      "precision": 1
     },
     "lazada-th-sea": {
       "name": "Lazada泰国海运",
@@ -184,19 +138,9 @@
       "shippingRate": 0.006,
       "shippingFormula": "重量 × 0.006 RMB/g",
       "shippingDescription": "泰国海运干线运费",
-      "precision": 1,
       "lastMileCost": 3,
       "subsidy": 29,
-      "excelFormula": {
-        "transactionFee": "ROUND((售价-优惠券-套装加购)*3.21%,1)",
-        "fcssFee": "ROUND((售价-优惠券-套装加购)*4%,1)",
-        "commission": "ROUND((售价-优惠券-套装加购)*11.24%,1)",
-        "superAlliance": "ROUND((售价-优惠券-套装加购)*1%,1)",
-        "activityCommission": "ROUND((售价-优惠券-套装加购)*1%,1)",
-        "coinDeduction": "ROUND((售价-优惠券-套装加购)*1%,1)",
-        "coupon": "(售价-套装加购)*5%",
-        "bundle": "售价*0% (第1件)"
-      }
+      "precision": 1
     }
   },
   "generalSettings": {
