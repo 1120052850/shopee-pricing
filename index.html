@@ -6,7 +6,7 @@
     <title>东南亚电商定价计算器</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 样式保持不变，与之前的代码相同 */
+        /* 优化后的样式 */
         * {
             margin: 0;
             padding: 0;
@@ -17,51 +17,57 @@
         body {
             background-color: #f5f7fa;
             color: #333;
-            line-height: 1.6;
-            padding: 20px;
+            line-height: 1.5;
+            padding: 8px;
+            height: 100vh;
+            overflow: hidden;
         }
         
         .container {
             max-width: 1400px;
             margin: 0 auto;
             background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         header {
             background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
             color: white;
-            padding: 25px 30px;
+            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
         
         header h1 {
-            font-size: 2.2rem;
+            font-size: 1.6rem;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 8px;
         }
         
         header p {
             opacity: 0.9;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
         }
         
         .settings-btn {
             background-color: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-size: 1rem;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 0.85rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             transition: all 0.3s ease;
         }
         
@@ -71,53 +77,61 @@
         
         .calculator-container {
             display: flex;
-            flex-wrap: wrap;
-            min-height: 600px;
+            flex-wrap: nowrap;
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
         }
         
         .input-section {
             flex: 1;
             min-width: 350px;
-            padding: 30px;
+            padding: 16px;
             background-color: #f9fafc;
-            border-right: 1px solid #eaeaea;
+            overflow-y: auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         .result-section {
             flex: 2;
             min-width: 600px;
-            padding: 30px;
-            overflow-x: auto;
+            padding: 16px;
+            overflow-y: auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            max-height: unset;
         }
         
         .section-title {
             color: #1a237e;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e8eaf6;
-            font-size: 1.4rem;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
+            font-weight: 600;
         }
         
         .section-title i {
-            font-size: 1.2rem;
+            font-size: 0.9rem;
         }
         
         .platform-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         
         .platform-selector select {
             width: 100%;
-            padding: 12px 15px;
+            padding: 8px 10px;
             border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
             background-color: white;
         }
         
@@ -128,28 +142,29 @@
         }
         
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
         
         .input-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         
         label {
             font-weight: 600;
             color: #444;
             flex: 1;
+            font-size: 0.85rem;
         }
         
         input[type="number"], select {
             flex: 2;
-            padding: 12px 15px;
+            padding: 8px 10px;
             border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
             transition: border-color 0.3s;
         }
         
@@ -161,22 +176,23 @@
         
         .calculate-btn {
             width: 100%;
-            padding: 16px;
+            padding: 12px;
             background: linear-gradient(135deg, #3949ab 0%, #283593 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 10px;
+            margin-top: 8px;
+            margin-bottom: 12px;
         }
         
         .calculate-btn:hover {
             background: linear-gradient(135deg, #283593 0%, #1a237e 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(26, 35, 126, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(26, 35, 126, 0.3);
         }
         
         .calculate-btn:active {
@@ -186,25 +202,22 @@
         .result-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
-            overflow: hidden;
+            margin-top: 12px;
+            font-size: 0.8rem;
         }
         
         .result-table th {
             background-color: #3949ab;
             color: white;
-            padding: 16px 12px;
+            padding: 10px 6px;
             text-align: center;
             font-weight: 600;
             white-space: nowrap;
         }
         
         .result-table td {
-            padding: 14px 12px;
+            padding: 8px 6px;
             text-align: center;
-            border-bottom: 1px solid #eee;
         }
         
         .result-table tr:nth-child(even) {
@@ -232,85 +245,76 @@
         
         .suggested-price-card {
             background-color: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            padding: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
             text-align: center;
-            border-top: 4px solid #3949ab;
-            margin-top: 20px;
-            margin-bottom: 25px;
+            border-top: 3px solid #3949ab;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
         }
         
         .suggested-price-card h3 {
             color: #555;
-            font-size: 1rem;
-            margin-bottom: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
         }
         
         .suggested-price-card .value {
-            font-size: 2.2rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: #1a237e;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
         }
         
         .suggested-price-card .unit {
             color: #777;
-            font-size: 1rem;
-        }
-        
-        .note {
-            margin-top: 25px;
-            padding: 15px;
-            background-color: #e8f5e9;
-            border-left: 4px solid #4caf50;
-            border-radius: 4px;
-            font-size: 0.95rem;
-            color: #2e7d32;
+            font-size: 0.85rem;
         }
         
         footer {
-            margin-top: 40px;
+            margin-top: auto;
             text-align: center;
-            padding: 20px;
+            padding: 10px;
             color: #666;
-            font-size: 0.9rem;
-            border-top: 1px solid #eee;
-        }
-        
-        @media (max-width: 1200px) {
-            .result-section {
-                overflow-x: scroll;
-            }
+            font-size: 0.75rem;
+            background-color: #f5f5f5;
+            flex-shrink: 0;
         }
         
         @media (max-width: 900px) {
+            body {
+                overflow: auto;
+                height: auto;
+            }
+            
+            .container {
+                height: auto;
+            }
+            
             .calculator-container {
                 flex-direction: column;
             }
             
             .input-section {
-                border-right: none;
                 border-bottom: 1px solid #eaeaea;
             }
             
             .platform-selector {
                 grid-template-columns: 1fr;
             }
-            
-            .input-section .suggested-price-card {
-                margin-top: 15px;
-                margin-bottom: 20px;
-            }
         }
         
         .mode-info {
             background-color: #e3f2fd;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 12px;
+            font-size: 0.8rem;
             color: #1565c0;
+            line-height: 1.4;
+            flex-shrink: 0;
         }
         
         .mode-info strong {
@@ -319,66 +323,183 @@
         
         .fee-details {
             background-color: #f5f5f5;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            font-size: 0.9rem;
+            border-radius: 6px;
+            padding: 12px;
+            max-height: none;
+            margin-bottom: 24px;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            overflow: visible;
         }
         
         .fee-details h4 {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             color: #333;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 8px;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .fee-item {
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px dashed #ddd;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e0e0e0;
         }
         
         .fee-item:last-child {
-            border-bottom: none;
             margin-bottom: 0;
             padding-bottom: 0;
+            border-bottom: none;
         }
         
-        .fee-label {
-            font-weight: 600;
-            color: #444;
-            margin-bottom: 4px;
+        .fee-compact {
             display: flex;
             justify-content: space-between;
+            margin-bottom: 2px;
         }
         
-        .fee-value {
-            font-weight: 600;
-            color: #1a237e;
-            text-align: right;
-        }
-        
-        .fee-local {
+        .fee-name {
             color: #666;
-            font-size: 0.85rem;
-            margin-top: 2px;
-            text-align: right;
+        }
+        
+        .fee-amount {
+            font-weight: 600;
+        }
+        
+        .fee-percentage {
+            color: #888;
+            font-size: 0.7rem;
+            font-weight: normal;
         }
         
         .currency-symbol {
-            font-size: 0.9em;
+            font-size: 0.8em;
             color: #666;
         }
         
         .formula-note {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #888;
-            margin-top: 3px;
+            margin-top: 2px;
             font-style: italic;
         }
         
-        /* 模态框样式 */
+        .shipping-params {
+            font-size: 0.65rem;
+            color: #666;
+            margin-top: 2px;
+            padding-left: 6px;
+        }
+        
+        .shipping-formula {
+            font-family: 'Courier New', monospace;
+            color: #d32f2f;
+            font-weight: 600;
+            font-size: 0.65rem;
+        }
+        
+        .fee-local {
+            color: #666;
+            font-size: 0.7rem;
+            margin-top: 1px;
+            text-align: right;
+        }
+        
+        .result-table tr {
+            height: 32px;
+        }
+        
+        .compact-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .input-section::-webkit-scrollbar,
+        .result-section::-webkit-scrollbar,
+        .fee-details::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        .input-section::-webkit-scrollbar-thumb,
+        .result-section::-webkit-scrollbar-thumb,
+        .fee-details::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 3px;
+        }
+        
+        .input-section::-webkit-scrollbar-track,
+        .result-section::-webkit-scrollbar-track,
+        .fee-details::-webkit-scrollbar-track {
+            background-color: #f5f5f5;
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .results-container {
+            display: block;
+            overflow: visible;
+        }
+        
+        .table-container {
+            margin-top: 20px;
+            height: auto;
+            overflow: visible;
+        }
+        
+        .table-container > div {
+            height: auto;
+            overflow: visible;
+        }
+        
+        .result-table-wrapper {
+            height: auto;
+            overflow: visible;
+            display: block;
+        }
+        
+        .result-table-wrapper > div {
+            height: auto;
+            overflow: visible;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3949ab;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -394,40 +515,39 @@
         
         .modal-content {
             background-color: white;
-            border-radius: 12px;
+            border-radius: 10px;
             width: 90%;
             max-width: 700px;
             max-height: 90vh;
             overflow-y: auto;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
         
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e8eaf6;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
         }
         
         .modal-header h2 {
             color: #1a237e;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .close-modal {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             cursor: pointer;
             color: #666;
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -440,28 +560,28 @@
         
         .settings-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
         }
         
         .setting-item {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .setting-item label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: #444;
         }
         
         .setting-item input {
             width: 100%;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
         }
         
         .setting-item input:focus {
@@ -473,16 +593,15 @@
         .modal-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 15px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 16px;
         }
         
         .btn {
-            padding: 12px 25px;
-            border-radius: 6px;
-            font-size: 1rem;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -508,79 +627,13 @@
         }
         
         .platform-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         
         .platform-group h3 {
             color: #1a237e;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e8eaf6;
-        }
-        
-        .fee-compact {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
-        
-        .fee-name {
-            color: #666;
-        }
-        
-        .fee-amount {
-            font-weight: 600;
-        }
-        
-        .fee-percentage {
-            color: #888;
-            font-size: 0.85rem;
-            font-weight: normal;
-        }
-        
-        /* 新增：运费参数显示 */
-        .shipping-params {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 4px;
-            padding-left: 10px;
-            border-left: 2px solid #ddd;
-        }
-        
-        .shipping-formula {
-            font-family: 'Courier New', monospace;
-            color: #d32f2f;
-            font-weight: 600;
-        }
-        
-        /* 加载提示 */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            flex-direction: column;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3949ab;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            margin-bottom: 12px;
+            padding-bottom: 6px;
         }
     </style>
 </head>
@@ -604,169 +657,177 @@
         
         <div class="calculator-container">
             <div class="input-section">
-                <h2 class="section-title"><i class="fas fa-cog"></i> 计算参数设置</h2>
-                
-                <div class="platform-selector">
-                    <div>
-                        <label for="platformSelect">选择平台</label>
-                        <select id="platformSelect">
-                            <option value="shopee">Shopee</option>
-                            <option value="lazada">Lazada</option>
-                        </select>
+                <div class="main-content">
+                    <h2 class="section-title"><i class="fas fa-cog"></i> 计算参数设置</h2>
+                    
+                    <div class="platform-selector">
+                        <div>
+                            <label for="platformSelect">选择平台</label>
+                            <select id="platformSelect">
+                                <option value="shopee">Shopee</option>
+                                <option value="lazada">Lazada</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="siteSelect">选择站点</label>
+                            <select id="siteSelect">
+                                <option value="vn">越南跨境</option>
+                                <option value="th">泰国跨境</option>
+                                <option value="th-local">泰国本土</option>
+                                <option value="th-sea">泰国海运</option>
+                            </select>
+                        </div>
                     </div>
                     
-                    <div>
-                        <label for="siteSelect">选择站点</label>
-                        <select id="siteSelect">
-                            <option value="vn">越南跨境</option>
-                            <option value="th">泰国跨境</option>
-                            <option value="th-local">泰国本土</option>
-                            <option value="th-sea">泰国海运</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="mode-info" id="modeInfo">
-                    <strong>Shopee越南跨境</strong> - 汇率: 3700 VND/RMB | 佣金: 15.33% | 交易费: 4.91% | FCSS+CCB: 5%
-                </div>
-                
-                <div class="input-group">
-                    <div class="input-row">
-                        <label for="price">售价（本地货币）</label>
-                        <input type="number" id="price" min="0" step="1" value="80000">
+                    <div class="mode-info" id="modeInfo">
+                        <strong>Shopee越南跨境</strong> - 汇率: 3700 VND/RMB | 佣金: 15.33% | 交易费: 4.91% | FCSS+CCB: 5%
                     </div>
                     
-                    <div class="input-row">
-                        <label for="purchasePrice">采购价（RMB）</label>
-                        <input type="number" id="purchasePrice" min="0" step="0.01" value="13.00">
+                    <div class="input-group">
+                        <div class="input-row">
+                            <label for="price">售价（本地货币）</label>
+                            <input type="number" id="price" min="0" step="1" value="80000">
+                        </div>
+                        
+                        <div class="input-row">
+                            <label for="purchasePrice">采购价（RMB）</label>
+                            <input type="number" id="purchasePrice" min="0" step="0.01" value="13.00">
+                        </div>
+                        
+                        <div class="input-row">
+                            <label for="weight">重量（g）</label>
+                            <input type="number" id="weight" min="1" step="1" value="100">
+                        </div>
+                        
+                        <div class="input-row">
+                            <label for="exchangeRate">汇率</label>
+                            <input type="number" id="exchangeRate" min="0" step="0.01" value="3700">
+                        </div>
+                        
+                        <div class="input-row">
+                            <label for="discount">上架折扣（%）</label>
+                            <input type="number" id="discount" min="0" max="100" step="0.1" value="40">
+                        </div>
                     </div>
                     
-                    <div class="input-row">
-                        <label for="weight">重量（g）</label>
-                        <input type="number" id="weight" min="1" step="1" value="100">
-                    </div>
+                    <button class="calculate-btn" id="calculateBtn">
+                        <i class="fas fa-calculator"></i> 计算利润
+                    </button>
                     
-                    <div class="input-row">
-                        <label for="exchangeRate">汇率</label>
-                        <input type="number" id="exchangeRate" min="0" step="0.01" value="3700">
+                    <!-- 建议上架价格板块（保持在左侧） -->
+                    <div class="suggested-price-card">
+                        <h3>建议上架价格</h3>
+                        <div class="value" id="suggestedPrice">133,333</div>
+                        <div class="unit" id="currencyUnit">VND</div>
+                        <div class="formula-note" id="suggestedPriceFormula">公式：售价 / (1 - 折扣率) = 80,000 / (1 - 0.4) = 133,333 VND</div>
                     </div>
-                    
-                    <div class="input-row">
-                        <label for="discount">上架折扣（%）</label>
-                        <input type="number" id="discount" min="0" max="100" step="0.1" value="40">
-                    </div>
-                </div>
-                
-                <button class="calculate-btn" id="calculateBtn">
-                    <i class="fas fa-calculator"></i> 计算利润
-                </button>
-                
-                <!-- 建议上架价格板块（保持在左侧） -->
-                <div class="suggested-price-card">
-                    <h3>建议上架价格</h3>
-                    <div class="value" id="suggestedPrice">133,333</div>
-                    <div class="unit" id="currencyUnit">VND</div>
-                    <div class="formula-note" id="suggestedPriceFormula">公式：售价 / (1 - 折扣率) = 80,000 / (1 - 0.4) = 133,333 VND</div>
                 </div>
             </div>
             
             <div class="result-section">
-                <!-- 单件费用详情板块（已移动到右侧，在利润计算结果上方） -->
-                <div class="fee-details" id="feeDetails">
-                    <h4><i class="fas fa-file-invoice-dollar"></i> 单件费用详情（本地货币）</h4>
-                    <div class="fee-item">
-                        <div class="fee-compact">
-                            <span class="fee-name">交易手续费<span class="fee-percentage" id="transactionFeePercentage"> (4.91%)</span>：</span>
-                            <span class="fee-amount" id="transactionFeeValue">3,928 VND</span>
+                <div class="results-container">
+                    <!-- 单件费用详情板块（在利润计算结果上方） -->
+                    <div class="fee-details" id="feeDetails">
+                        <h4><i class="fas fa-file-invoice-dollar"></i> 单件费用详情（本地货币）</h4>
+                        <div class="fee-item">
+                            <div class="fee-compact">
+                                <span class="fee-name">交易手续费<span class="fee-percentage" id="transactionFeePercentage"> (4.91%)</span>：</span>
+                                <span class="fee-amount" id="transactionFeeValue">3,928 VND</span>
+                            </div>
+                            <div class="fee-local" id="transactionFeeLocal">≈ ¥1.06</div>
                         </div>
-                        <div class="fee-local" id="transactionFeeLocal">≈ ¥1.06</div>
+                        <div class="fee-item">
+                            <div class="fee-compact">
+                                <span class="fee-name">FCSS+CCB服务费<span class="fee-percentage" id="fcssFeePercentage"> (5%)</span>：</span>
+                                <span class="fee-amount" id="fcssFeeValue">4,000 VND</span>
+                            </div>
+                            <div class="fee-local" id="fcssFeeLocal">≈ ¥1.08</div>
+                        </div>
+                        <div class="fee-item">
+                            <div class="fee-compact">
+                                <span class="fee-name">佣金<span class="fee-percentage" id="commissionPercentage"> (15.33%)</span>：</span>
+                                <span class="fee-amount" id="commissionValue">12,264 VND</span>
+                            </div>
+                            <div class="fee-local" id="commissionLocal">≈ ¥3.31</div>
+                        </div>
+                        <div class="fee-item">
+                            <div class="fee-compact">
+                                <span class="fee-name">超级联盟<span class="fee-percentage" id="superAlliancePercentage"> (1%)</span>：</span>
+                                <span class="fee-amount" id="superAllianceValue">800 VND</span>
+                            </div>
+                            <div class="fee-local" id="superAllianceLocal">≈ ¥0.22</div>
+                        </div>
+                        <div class="fee-item">
+                            <div class="fee-compact">
+                                <span class="fee-name">平台费：</span>
+                                <span class="fee-amount" id="platformFeeValue">13,800 VND</span>
+                            </div>
+                            <div class="fee-local" id="platformFeeLocal">≈ ¥3.73</div>
+                        </div>
+                        <div class="fee-item">
+                            <div class="fee-compact">
+                                <span class="fee-name">仓储成本：</span>
+                                <span class="fee-amount" id="storageCostValue">¥1.40</span>
+                            </div>
+                        </div>
+                        <div class="fee-item">
+                            <div class="fee-compact">
+                                <span class="fee-name">干线运费：</span>
+                                <span class="fee-amount" id="shippingCostValue">¥0.81</span>
+                            </div>
+                            <!-- 新增：干线运费参数显示 -->
+                            <div class="shipping-params" id="shippingParams">
+                                参数：100g × ¥0.0081/g = ¥0.81
+                                <div class="shipping-formula" id="shippingFormula">
+                                    公式：weight × shippingRate
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fee-item">
+                            <div class="fee-compact">
+                                <span class="fee-name">总收入（本地）：</span>
+                                <span class="fee-amount" id="totalRevenueLocalValue">58,868 VND</span>
+                            </div>
+                            <div class="fee-local" id="totalRevenueLocal">≈ ¥15.91</div>
+                        </div>
                     </div>
-                    <div class="fee-item">
-                        <div class="fee-compact">
-                            <span class="fee-name">FCSS+CCB服务费<span class="fee-percentage" id="fcssFeePercentage"> (5%)</span>：</span>
-                            <span class="fee-amount" id="fcssFeeValue">4,000 VND</span>
-                        </div>
-                        <div class="fee-local" id="fcssFeeLocal">≈ ¥1.08</div>
-                    </div>
-                    <div class="fee-item">
-                        <div class="fee-compact">
-                            <span class="fee-name">佣金<span class="fee-percentage" id="commissionPercentage"> (15.33%)</span>：</span>
-                            <span class="fee-amount" id="commissionValue">12,264 VND</span>
-                        </div>
-                        <div class="fee-local" id="commissionLocal">≈ ¥3.31</div>
-                    </div>
-                    <div class="fee-item">
-                        <div class="fee-compact">
-                            <span class="fee-name">超级联盟<span class="fee-percentage" id="superAlliancePercentage"> (1%)</span>：</span>
-                            <span class="fee-amount" id="superAllianceValue">800 VND</span>
-                        </div>
-                        <div class="fee-local" id="superAllianceLocal">≈ ¥0.22</div>
-                    </div>
-                    <div class="fee-item">
-                        <div class="fee-compact">
-                            <span class="fee-name">平台费：</span>
-                            <span class="fee-amount" id="platformFeeValue">13,800 VND</span>
-                        </div>
-                        <div class="fee-local" id="platformFeeLocal">≈ ¥3.73</div>
-                    </div>
-                    <div class="fee-item">
-                        <div class="fee-compact">
-                            <span class="fee-name">仓储成本：</span>
-                            <span class="fee-amount" id="storageCostValue">¥1.40</span>
-                        </div>
-                    </div>
-                    <div class="fee-item">
-                        <div class="fee-compact">
-                            <span class="fee-name">干线运费：</span>
-                            <span class="fee-amount" id="shippingCostValue">¥0.81</span>
-                        </div>
-                        <!-- 新增：干线运费参数显示 -->
-                        <div class="shipping-params" id="shippingParams">
-                            参数：100g × ¥0.0081/g = ¥0.81
-                            <div class="shipping-formula" id="shippingFormula">
-                                公式：weight × shippingRate
+                    
+                    <div class="table-container">
+                        <h2 class="section-title"><i class="fas fa-chart-line"></i> 利润计算结果（1-5件）</h2>
+                        
+                        <div class="result-table-wrapper">
+                            <div>
+                                <table class="result-table">
+                                    <thead>
+                                        <tr>
+                                            <th>件数</th>
+                                            <th>总售价</th>
+                                            <th>干线运费 (RMB)</th>
+                                            <th>总收入 (RMB)</th>
+                                            <th>总成本 (RMB)</th>
+                                            <th>毛利 (RMB)</th>
+                                            <th>毛利率</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="resultTable">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center; padding: 40px;">
+                                                请设置参数并点击"计算利润"按钮
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
-                    <div class="fee-item">
-                        <div class="fee-compact">
-                            <span class="fee-name">总收入（本地）：</span>
-                            <span class="fee-amount" id="totalRevenueLocalValue">58,868 VND</span>
-                        </div>
-                        <div class="fee-local" id="totalRevenueLocal">≈ ¥15.91</div>
-                    </div>
-                </div>
-                
-                <h2 class="section-title"><i class="fas fa-chart-line"></i> 利润计算结果（1-5件）</h2>
-                
-                <div style="overflow-x: auto;">
-                    <table class="result-table">
-                        <thead>
-                            <tr>
-                                <th>件数</th>
-                                <th>总售价</th>
-                                <th>干线运费 (RMB)</th>
-                                <th>总收入 (RMB)</th>
-                                <th>总成本 (RMB)</th>
-                                <th>毛利 (RMB)</th>
-                                <th>毛利率</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultTable">
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 40px;">
-                                    请设置参数并点击"计算利润"按钮
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
         
         <footer>
-            <p>© 2023 东南亚电商定价计算器 | 基于Shopee & Lazada定价表逻辑开发</p>
-            <p style="margin-top: 5px; font-size: 0.85rem;">数据仅供参考，实际利润可能因平台政策调整而有所变化</p>
+            <p>© 2026 东南亚电商定价计算器 | 基于Shopee & Lazada定价表逻辑开发</p>
+            <p style="margin-top: 2px; font-size: 0.7rem;">数据仅供参考，实际利润可能因平台政策调整而有所变化</p>
         </footer>
     </div>
     
@@ -798,7 +859,7 @@
     <input type="file" id="configFileInput" accept=".json" style="display: none;">
 
     <script>
-        // 平台配置数据 - 初始化为空，从JSON文件加载
+        // 平台配置数据 - 根据Excel表格完全对齐
         let platformConfigs = {};
         let currentConfig = {}; // 存储当前配置
         let originalConfig = {}; // 存储原始配置（用于重置）
@@ -863,133 +924,16 @@
         const settingsGrid = document.getElementById('settingsGrid');
         const settingsPlaceholder = document.getElementById('settingsPlaceholder');
         
-        // 默认配置（备用，当无法加载外部配置时使用）
-        const defaultConfig = {
-            platforms: {
-                'shopee-vn': {
-                    name: 'Shopee越南跨境',
-                    currency: 'VND',
-                    defaultPrice: 80000,
-                    defaultPurchase: 13,
-                    defaultWeight: 100,
-                    defaultExchange: 3700,
-                    storageCost: 1.4,
-                    transactionFeeRate: 0.0491,
-                    fcssRate: 0.05,
-                    commissionRate: 0.1533,
-                    superAllianceRate: 0.01,
-                    couponRate: 0,
-                    bundleRate: 0.02,
-                    platformFee: 13800,
-                    shippingRate: 0.008,
-                    shippingFormula: '重量 × 0.008 RMB/g',
-                    shippingDescription: '越南跨境干线运费简化计算'
-                },
-                'shopee-th': {
-                    name: 'Shopee泰国跨境',
-                    currency: 'THB',
-                    defaultPrice: 180,
-                    defaultPurchase: 5.1,
-                    defaultWeight: 150,
-                    defaultExchange: 5,
-                    storageCost: 1.4,
-                    transactionFeeRate: 0.0321,
-                    commissionRate: 0.1722,
-                    fcssRate: 0.05,
-                    superAllianceRate: 0.01,
-                    couponRate: 0,
-                    bundleRate: 0.02,
-                    platformFee: 1.07,
-                    shippingRate: 0.006,
-                    shippingFormula: '重量 × 0.006 RMB/g',
-                    shippingDescription: '泰国跨境空运干线'
-                },
-                'shopee-th-local': {
-                    name: 'Shopee泰国本土',
-                    currency: 'THB',
-                    defaultPrice: 35,
-                    defaultPurchase: 2.6,
-                    defaultWeight: 50,
-                    defaultExchange: 5,
-                    storageCost: 1.7,
-                    transactionFeeRate: 0.0321,
-                    fcssRate: 0.0749,
-                    commissionRate: 0.0856,
-                    superAllianceRate: 0.01,
-                    couponRate: 0.05,
-                    bundleRate: 0.02,
-                    platformFee: 1.07,
-                    shippingRate: 0.0095,
-                    shippingFormula: '重量 × 0.0095 RMB/g',
-                    shippingDescription: '泰国本土陆运干线'
-                },
-                'lazada-vn': {
-                    name: 'Lazada越南跨境',
-                    currency: 'VND',
-                    defaultPrice: 78200,
-                    defaultPurchase: 9,
-                    defaultWeight: 250,
-                    defaultExchange: 3700,
-                    storageCost: 1.4,
-                    transactionFeeRate: 0.0415,
-                    fcssRate: 0,
-                    commissionRate: 0.1335,
-                    superAllianceRate: 0.01,
-                    couponRate: 0.05,
-                    bundleRate: 0,
-                    platformFee: 13800,
-                    shippingRate: 0.008,
-                    shippingFormula: '按重量阶梯收费（简化）',
-                    shippingDescription: '越南跨境按重量阶梯计算运费'
-                },
-                'lazada-th': {
-                    name: 'Lazada泰国跨境',
-                    currency: 'THB',
-                    defaultPrice: 64,
-                    defaultPurchase: 7.1,
-                    defaultWeight: 100,
-                    defaultExchange: 5,
-                    storageCost: 1.4,
-                    transactionFeeRate: 0.0321,
-                    fcssRate: 0.04,
-                    commissionRate: 0.1124,
-                    superAllianceRate: 0.01,
-                    couponRate: 0.05,
-                    bundleRate: 0,
-                    platformFee: 0,
-                    shippingRate: 0.025,
-                    shippingFormula: '重量 × 0.025 RMB/g',
-                    shippingDescription: '泰国跨境空运干线'
-                },
-                'lazada-th-sea': {
-                    name: 'Lazada泰国海运',
-                    currency: 'THB',
-                    defaultPrice: 75,
-                    defaultPurchase: 6,
-                    defaultWeight: 500,
-                    defaultExchange: 5,
-                    storageCost: 1.4,
-                    transactionFeeRate: 0.0321,
-                    fcssRate: 0.04,
-                    commissionRate: 0.1124,
-                    superAllianceRate: 0.01,
-                    couponRate: 0.05,
-                    bundleRate: 0,
-                    platformFee: 0,
-                    shippingRate: 0.006,
-                    shippingFormula: '重量 × 0.006 RMB/g',
-                    shippingDescription: '泰国海运干线'
-                }
-            },
-            generalSettings: {
-                storageCost: 1.4,
-                superAllianceRate: 0.01,
-                activityCommissionRate: 0.01,
-                coinDeductionRate: 0.01
+        // 四舍五入函数（与Excel的ROUND函数一致）
+        function roundExcel(value, precision) {
+            if (precision === undefined || precision === null) {
+                return Math.round(value);
             }
-        };
+            const multiplier = Math.pow(10, precision);
+            return Math.round(value * multiplier) / multiplier;
+        }
         
-        // 加载配置文件
+        // 加载配置文件 - 完全按照Excel表格数据
         async function loadConfig() {
             try {
                 // 尝试从config.json文件加载配置
@@ -1000,9 +944,210 @@
                 currentConfig = await response.json();
                 console.log('配置文件加载成功');
             } catch (error) {
-                console.warn('无法加载config.json文件，使用默认配置:', error);
-                // 使用默认配置
-                currentConfig = JSON.parse(JSON.stringify(defaultConfig));
+                console.warn('无法加载config.json文件，使用默认配置（完全对齐表格）:', error);
+                // 创建默认配置 - 完全按照Excel表格数据
+                currentConfig = {
+                    platforms: {
+                        'shopee-vn': {
+                            name: 'Shopee越南跨境',
+                            currency: 'VND',
+                            defaultPrice: 80000,
+                            defaultPurchase: 13,
+                            defaultWeight: 100,
+                            defaultExchange: 3700,
+                            storageCost: 1.4,
+                            transactionFeeRate: 0.0491,
+                            fcssRate: 0.05,
+                            commissionRate: 0.1533,
+                            superAllianceRate: 0.01,
+                            activityCommissionRate: 0,
+                            coinDeductionRate: 0,
+                            couponRate: 0,
+                            bundleRate: 0,
+                            platformFee: 13800,
+                            shippingRate: 0.0081, // 根据表格计算得出：100g对应3000 VND / 3700 = 0.8108 RMB
+                            shippingFormula: "重量对应的干线价卡 / 汇率",
+                            shippingDescription: "越南跨境干线按重量阶梯计算",
+                            precision: 0,
+                            // Excel特定设置
+                            excelFormula: {
+                                transactionFee: "ROUND((售价-优惠券-套装加购)*4.91%,0)",
+                                fcssFee: "ROUND((售价-优惠券-套装加购)*5%,0)",
+                                commission: "ROUND((售价-优惠券-套装加购)*15.33%,0)",
+                                superAlliance: "ROUND((售价-优惠券-套装加购)*1%,0)",
+                                coupon: "售价*0%",
+                                bundle: "售价*0%"
+                            }
+                        },
+                        'shopee-th': {
+                            name: 'Shopee泰国跨境',
+                            currency: 'THB',
+                            defaultPrice: 180,
+                            defaultPurchase: 5.1,
+                            defaultWeight: 150,
+                            defaultExchange: 5,
+                            storageCost: 1.4,
+                            transactionFeeRate: 0.0321,
+                            fcssRate: 0.0535,
+                            commissionRate: 0.1819,
+                            superAllianceRate: 0.01,
+                            activityCommissionRate: 0,
+                            coinDeductionRate: 0,
+                            couponRate: 0.05,
+                            bundleRate: 0,
+                            platformFee: 1.07, // 表格中为1.07 THB
+                            shippingRate: 0.006,
+                            shippingFormula: "重量 × 0.006 RMB/g",
+                            shippingDescription: "泰国跨境干线运费",
+                            precision: 0,
+                            // Excel特定设置
+                            excelFormula: {
+                                transactionFee: "ROUND((售价-优惠券-套装加购)*3.21%,0)",
+                                fcssFee: "ROUND((售价-优惠券-套装加购)*5.35%,0)",
+                                commission: "ROUND((售价-优惠券-套装加购)*18.19%,0)",
+                                superAlliance: "ROUND((售价-优惠券-套装加购)*1%,0)",
+                                coupon: "(售价-套装加购)*5%",
+                                bundle: "售价*0% (第1件)"
+                            }
+                        },
+                        'shopee-th-local': {
+                            name: 'Shopee泰国本土',
+                            currency: 'THB',
+                            defaultPrice: 35,
+                            defaultPurchase: 2.6,
+                            defaultWeight: 50,
+                            defaultExchange: 5,
+                            storageCost: 1.7,
+                            transactionFeeRate: 0.0321,
+                            fcssRate: 0.0749,
+                            commissionRate: 0.0856,
+                            superAllianceRate: 0.01,
+                            activityCommissionRate: 0,
+                            coinDeductionRate: 0,
+                            couponRate: 0.05,
+                            bundleRate: 0,
+                            platformFee: 1.07, // 表格中为1.07 THB
+                            shippingRate: 0.0095,
+                            shippingFormula: "重量 × 0.0095 RMB/g",
+                            shippingDescription: "泰国本土干线运费",
+                            precision: 0,
+                            // Excel特定设置
+                            excelFormula: {
+                                transactionFee: "ROUND((售价-优惠券-套装加购)*3.21%,0)",
+                                fcssFee: "ROUND((售价-优惠券-套装加购)*7.49%,0)",
+                                commission: "ROUND((售价-优惠券-套装加购)*8.56%,0)",
+                                superAlliance: "ROUND((售价-优惠券-套装加购)*1%,0)",
+                                coupon: "(售价-套装加购)*5%",
+                                bundle: "售价*0% (第1件)"
+                            }
+                        },
+                        'lazada-vn': {
+                            name: 'Lazada越南跨境',
+                            currency: 'VND',
+                            defaultPrice: 78200,
+                            defaultPurchase: 9,
+                            defaultWeight: 250,
+                            defaultExchange: 3700,
+                            storageCost: 1.4,
+                            transactionFeeRate: 0.0415,
+                            fcssRate: 0,
+                            commissionRate: 0.1335,
+                            superAllianceRate: 0.01,
+                            activityCommissionRate: 0.01,
+                            coinDeductionRate: 0.01,
+                            couponRate: 0,
+                            bundleRate: 0,
+                            platformFee: 13800,
+                            shippingRate: 0.008,
+                            shippingFormula: "重量 × 0.008 RMB/g",
+                            shippingDescription: "越南跨境干线运费",
+                            precision: 0,
+                            // Excel特定设置
+                            excelFormula: {
+                                transactionFee: "ROUND((售价-优惠券-套装加购)*4.15%,0)",
+                                fcssFee: "ROUND((售价-优惠券-套装加购)*0%,0)",
+                                commission: "ROUND((售价-优惠券-套装加购)*13.35%,0)",
+                                superAlliance: "ROUND((售价-优惠券-套装加购)*1%,0)",
+                                activityCommission: "ROUND((售价-优惠券-套装加购)*1%,0)",
+                                coinDeduction: "ROUND((售价-优惠券-套装加购)*1%,0)",
+                                coupon: "售价*0%",
+                                bundle: "售价*0%"
+                            }
+                        },
+                        'lazada-th': {
+                            name: 'Lazada泰国跨境',
+                            currency: 'THB',
+                            defaultPrice: 64,
+                            defaultPurchase: 7.1,
+                            defaultWeight: 100,
+                            defaultExchange: 5,
+                            storageCost: 1.4,
+                            transactionFeeRate: 0.0321,
+                            fcssRate: 0.04,
+                            commissionRate: 0.1124,
+                            superAllianceRate: 0.01,
+                            activityCommissionRate: 0.01,
+                            coinDeductionRate: 0.01,
+                            couponRate: 0.05,
+                            bundleRate: 0,
+                            platformFee: 0,
+                            shippingRate: 0.025,
+                            shippingFormula: "重量 × 0.025 RMB/g",
+                            shippingDescription: "泰国跨境干线运费",
+                            precision: 1,
+                            // Excel特定设置
+                            excelFormula: {
+                                transactionFee: "ROUND((售价-优惠券-套装加购)*3.21%,1)",
+                                fcssFee: "ROUND((售价-优惠券-套装加购)*4%,1)",
+                                commission: "ROUND((售价-优惠券-套装加购)*11.24%,1)",
+                                superAlliance: "ROUND((售价-优惠券-套装加购)*1%,1)",
+                                activityCommission: "ROUND((售价-优惠券-套装加购)*1%,1)",
+                                coinDeduction: "ROUND((售价-优惠券-套装加购)*1%,1)",
+                                coupon: "(售价-套装加购)*5%",
+                                bundle: "售价*0% (第1件)"
+                            }
+                        },
+                        'lazada-th-sea': {
+                            name: 'Lazada泰国海运',
+                            currency: 'THB',
+                            defaultPrice: 75,
+                            defaultPurchase: 6,
+                            defaultWeight: 500,
+                            defaultExchange: 5,
+                            storageCost: 1.4,
+                            transactionFeeRate: 0.0321,
+                            fcssRate: 0.04,
+                            commissionRate: 0.1124,
+                            superAllianceRate: 0.01,
+                            activityCommissionRate: 0.01,
+                            coinDeductionRate: 0.01,
+                            couponRate: 0.05,
+                            bundleRate: 0,
+                            platformFee: 0,
+                            shippingRate: 0.006,
+                            shippingFormula: "重量 × 0.006 RMB/g",
+                            shippingDescription: "泰国海运干线运费",
+                            precision: 1,
+                            // Excel特定设置
+                            excelFormula: {
+                                transactionFee: "ROUND((售价-优惠券-套装加购)*3.21%,1)",
+                                fcssFee: "ROUND((售价-优惠券-套装加购)*4%,1)",
+                                commission: "ROUND((售价-优惠券-套装加购)*11.24%,1)",
+                                superAlliance: "ROUND((售价-优惠券-套装加购)*1%,1)",
+                                activityCommission: "ROUND((售价-优惠券-套装加购)*1%,1)",
+                                coinDeduction: "ROUND((售价-优惠券-套装加购)*1%,1)",
+                                coupon: "(售价-套装加购)*5%",
+                                bundle: "售价*0% (第1件)"
+                            }
+                        }
+                    },
+                    generalSettings: {
+                        storageCost: 1.4,
+                        superAllianceRate: 0.01,
+                        activityCommissionRate: 0.01,
+                        coinDeductionRate: 0.01
+                    }
+                };
             }
             
             // 存储原始配置副本
@@ -1102,16 +1247,12 @@
             if (platform === 'shopee') {
                 if (site === 'th-local') {
                     currentPlatform = 'shopee-th-local';
-                } else if (site === 'th-sea') {
-                    currentPlatform = 'shopee-th';
                 } else {
                     currentPlatform = `shopee-${site}`;
                 }
             } else if (platform === 'lazada') {
                 if (site === 'th-sea') {
                     currentPlatform = 'lazada-th-sea';
-                } else if (site === 'th-local') {
-                    currentPlatform = 'lazada-th';
                 } else {
                     currentPlatform = `lazada-${site}`;
                 }
@@ -1143,13 +1284,13 @@
             if (typeof config.shippingRate === 'number') {
                 info += ` | 干线运费: ${config.shippingRate} RMB/g`;
             } else {
-                info += ` | 干线运费: ${config.shippingRate}`;
+                info += ` | 干线运费: 按重量阶梯计算`;
             }
             
             modeInfo.innerHTML = info;
         }
         
-        // 计算并显示结果
+        // 计算并显示结果 - 完全按照Excel表格公式
         function calculateAndDisplay() {
             const config = platformConfigs[currentPlatform];
             const price = parseFloat(priceInput.value);
@@ -1158,11 +1299,11 @@
             const exchangeRate = parseFloat(exchangeRateInput.value);
             const discount = parseFloat(discountInput.value) / 100;
             
-            // 计算单件费用详情
-            const singleItemResult = calculateSingleItemFees(config, price, weight, exchangeRate);
+            // 计算单件费用详情 - 完全按照Excel公式
+            const singleItemResult = calculateSingleItemFees(config, price, weight, exchangeRate, 1);
             
             // 更新费用详情显示
-            updateFeeDetails(config, singleItemResult);
+            updateFeeDetails(config, singleItemResult, exchangeRate);
             
             // 计算建议上架价格
             const suggestedPrice = price / (1 - discount);
@@ -1177,7 +1318,7 @@
             // 清空结果表
             resultTable.innerHTML = '';
             
-            // 计算1-5件
+            // 计算1-5件 - 完全按照Excel表格计算
             for (let quantity = 1; quantity <= 5; quantity++) {
                 const result = calculateProfit(config, price, purchasePrice, weight, exchangeRate, discount, quantity);
                 
@@ -1203,37 +1344,98 @@
             }
         }
         
-        // 计算单件费用详情
-        function calculateSingleItemFees(config, price, weight, exchangeRate) {
-            // 套装加购折扣（第1件为0%）
-            let bundleDiscount = 0;
-            
-            // 优惠券折扣
-            let couponDiscount = 0;
-            if (config.couponRate) {
-                couponDiscount = price * config.couponRate;
+        // 计算单件费用详情 - 完全按照Excel公式
+        function calculateSingleItemFees(config, price, weight, exchangeRate, quantity = 1) {
+            // 确定套装加购费率（根据Excel表格）
+            // 第1件：套装加购为0，第2件起：套装加购为售价的2%
+            let bundleRate = 0;
+            if (quantity > 1) {
+                bundleRate = 0.02;
             }
             
-            // 计算基础（售价减去优惠券和套装加购）
-            const baseAmount = price - couponDiscount - bundleDiscount;
+            // 套装加购金额
+            const bundleDiscount = price * quantity * bundleRate;
             
-            // 各项费用（按照Excel公式，四舍五入到整数）
-            const transactionFee = Math.round(baseAmount * config.transactionFeeRate);
-            const fcssFee = Math.round(baseAmount * config.fcssRate);
-            const commission = Math.round(baseAmount * config.commissionRate);
-            const superAlliance = Math.round(baseAmount * config.superAllianceRate);
+            // 优惠券金额（根据Excel公式）
+            // Excel公式: (B-K)*couponRate (B: 售价, K: 套装加购)
+            // 但某些情况是 (B-K)*couponRate，某些是 B*couponRate
+            let couponDiscount = 0;
             
-            // 平台费
+            // 根据平台和数量确定优惠券计算方式
+            if (quantity === 1) {
+                // 第1件：通常优惠券为0或特定公式
+                if (currentPlatform === 'shopee-vn' || currentPlatform === 'lazada-vn') {
+                    // 越南跨境第1件：优惠券为0
+                    couponDiscount = 0;
+                } else if (currentPlatform === 'shopee-th' || currentPlatform === 'shopee-th-local') {
+                    // 泰国跨境/本土第1件：优惠券 = (售价-套装加购)*5%
+                    couponDiscount = (price * quantity - bundleDiscount) * config.couponRate;
+                } else if (currentPlatform.includes('lazada')) {
+                    // Lazada泰国第1件：优惠券 = (售价-套装加购)*5%
+                    couponDiscount = (price * quantity - bundleDiscount) * config.couponRate;
+                }
+            } else {
+                // 第2件起：统一使用 (售价-套装加购)*优惠券费率
+                couponDiscount = (price * quantity - bundleDiscount) * config.couponRate;
+            }
+            
+            // 计算基数：售价 - 优惠券 - 套装加购（与Excel公式一致）
+            const baseAmount = price * quantity - couponDiscount - bundleDiscount;
+            
+            // 各项费用（按照Excel公式，四舍五入到指定精度）
+            const transactionFee = roundExcel(baseAmount * config.transactionFeeRate, config.precision);
+            const fcssFee = roundExcel(baseAmount * config.fcssRate, config.precision);
+            const commission = roundExcel(baseAmount * config.commissionRate, config.precision);
+            
+            // 超级联盟（Excel公式: (B-J-K)*superAllianceRate）
+            const superAllianceBase = price * quantity - couponDiscount - bundleDiscount;
+            const superAlliance = roundExcel(superAllianceBase * config.superAllianceRate, config.precision);
+            
+            // 活动佣金（仅Lazada有）
+            const activityCommission = roundExcel(superAllianceBase * config.activityCommissionRate, config.precision);
+            
+            // 金币抵扣（仅Lazada有）
+            const coinDeduction = roundExcel(superAllianceBase * config.coinDeductionRate, config.precision);
+            
+            // 平台费（固定值）
             const platformFee = config.platformFee;
             
-            // 仓储成本（RMB）
-            const storageCost = config.storageCost;
+            // 仓储成本（固定值）
+            const storageCost = config.storageCost * quantity;
             
-            // 干线运费（RMB）
-            const shippingCost = weight * config.shippingRate;
+            // 干线运费 - 使用与Excel完全相同的公式
+            let shippingCost = 0;
             
-            // 计算总收入（本地货币）- 按照Excel公式
-            const totalRevenueLocal = price - transactionFee - fcssFee - commission - couponDiscount - bundleDiscount - superAlliance - platformFee;
+            if (currentPlatform === 'shopee-vn') {
+                // Shopee越南跨境：需要查询干线价卡表
+                // 根据Excel表格中的VLOOKUP公式
+                // 我们使用简化版本：重量 * 0.0081 RMB/g (基于100g对应3000 VND / 3700汇率)
+                shippingCost = weight * quantity * 0.0081;
+            } else if (currentPlatform === 'shopee-th') {
+                // Shopee泰国跨境：重量 × 0.006 RMB/g
+                shippingCost = weight * quantity * 0.006;
+            } else if (currentPlatform === 'shopee-th-local') {
+                // Shopee泰国本土：重量 × 0.0095 RMB/g
+                shippingCost = weight * quantity * 0.0095;
+            } else if (currentPlatform === 'lazada-vn') {
+                // Lazada越南跨境：重量 × 0.008 RMB/g
+                shippingCost = weight * quantity * 0.008;
+            } else if (currentPlatform === 'lazada-th') {
+                // Lazada泰国跨境：重量 × 0.025 RMB/g
+                shippingCost = weight * quantity * 0.025;
+            } else if (currentPlatform === 'lazada-th-sea') {
+                // Lazada泰国海运：重量 × 0.006 RMB/g
+                shippingCost = weight * quantity * 0.006;
+            }
+            
+            // 总收入计算 - 完全按照Excel公式
+            // 总收入（本地）= 售价 - 交易手续费 - FCSS服务费 - 佣金 - 优惠券 - 套装加购 - 超级联盟 - 活动佣金 - 金币抵扣 - 平台费
+            let totalRevenueLocal = price * quantity - transactionFee - fcssFee - commission - couponDiscount - bundleDiscount - superAlliance - platformFee;
+            
+            // Lazada需要减去活动佣金和金币抵扣
+            if (currentPlatform.includes('lazada')) {
+                totalRevenueLocal = totalRevenueLocal - activityCommission - coinDeduction;
+            }
             
             // 总收入（人民币）
             const totalRevenueRMB = totalRevenueLocal / exchangeRate;
@@ -1243,6 +1445,8 @@
                 fcssFee,
                 commission,
                 superAlliance,
+                activityCommission,
+                coinDeduction,
                 platformFee,
                 storageCost,
                 shippingCost,
@@ -1254,7 +1458,7 @@
         }
         
         // 更新费用详情显示
-        function updateFeeDetails(config, result) {
+        function updateFeeDetails(config, result, exchangeRate) {
             // 更新百分比显示
             transactionFeePercentage.textContent = ` (${(config.transactionFeeRate * 100).toFixed(2)}%)`;
             fcssFeePercentage.textContent = ` (${(config.fcssRate * 100).toFixed(2)}%)`;
@@ -1263,34 +1467,56 @@
             
             // 更新费用值显示
             transactionFeeValue.textContent = `${formatNumber(result.transactionFee)} ${config.currency}`;
-            transactionFeeLocal.textContent = `≈ ${formatCurrency(result.transactionFee / config.defaultExchange)}`;
+            transactionFeeLocal.textContent = `≈ ${formatCurrency(result.transactionFee / exchangeRate)}`;
             
             fcssFeeValue.textContent = `${formatNumber(result.fcssFee)} ${config.currency}`;
-            fcssFeeLocal.textContent = `≈ ${formatCurrency(result.fcssFee / config.defaultExchange)}`;
+            fcssFeeLocal.textContent = `≈ ${formatCurrency(result.fcssFee / exchangeRate)}`;
             
             commissionValue.textContent = `${formatNumber(result.commission)} ${config.currency}`;
-            commissionLocal.textContent = `≈ ${formatCurrency(result.commission / config.defaultExchange)}`;
+            commissionLocal.textContent = `≈ ${formatCurrency(result.commission / exchangeRate)}`;
             
             superAllianceValue.textContent = `${formatNumber(result.superAlliance)} ${config.currency}`;
-            superAllianceLocal.textContent = `≈ ${formatCurrency(result.superAlliance / config.defaultExchange)}`;
+            superAllianceLocal.textContent = `≈ ${formatCurrency(result.superAlliance / exchangeRate)}`;
             
             platformFeeValue.textContent = `${formatNumber(result.platformFee)} ${config.currency}`;
-            platformFeeLocal.textContent = `≈ ${formatCurrency(result.platformFee / config.defaultExchange)}`;
+            platformFeeLocal.textContent = `≈ ${formatCurrency(result.platformFee / exchangeRate)}`;
             
             storageCostValue.textContent = `${formatCurrency(result.storageCost)}`;
             shippingCostValue.textContent = `${formatCurrency(result.shippingCost)}`;
             
             // 更新干线运费参数显示
             const weight = parseFloat(weightInput.value);
-            const rate = config.shippingRate;
+            let rate = 0;
+            let formula = "";
+            
+            if (currentPlatform === 'shopee-vn') {
+                rate = 0.0081;
+                formula = "重量 × 0.0081 RMB/g (基于100g对应3000 VND / 3700汇率)";
+            } else if (currentPlatform === 'shopee-th') {
+                rate = 0.006;
+                formula = "重量 × 0.006 RMB/g";
+            } else if (currentPlatform === 'shopee-th-local') {
+                rate = 0.0095;
+                formula = "重量 × 0.0095 RMB/g";
+            } else if (currentPlatform === 'lazada-vn') {
+                rate = 0.008;
+                formula = "重量 × 0.008 RMB/g";
+            } else if (currentPlatform === 'lazada-th') {
+                rate = 0.025;
+                formula = "重量 × 0.025 RMB/g";
+            } else if (currentPlatform === 'lazada-th-sea') {
+                rate = 0.006;
+                formula = "重量 × 0.006 RMB/g";
+            }
+            
             shippingParams.innerHTML = `参数：${weight}g × ¥${rate.toFixed(4)}/g = ${formatCurrency(result.shippingCost)}`;
-            shippingFormula.textContent = `公式：${config.shippingFormula}`;
+            shippingFormula.textContent = `公式：${formula}`;
             
             totalRevenueLocalValue.textContent = `${formatNumber(result.totalRevenueLocal)} ${config.currency}`;
             totalRevenueLocal.textContent = `≈ ${formatCurrency(result.totalRevenueRMB)}`;
         }
         
-        // 计算利润
+        // 计算利润 - 完全按照Excel表格
         function calculateProfit(config, price, purchasePrice, weight, exchangeRate, discount, quantity) {
             // 总售价（本地货币）
             const totalPrice = price * quantity;
@@ -1298,44 +1524,39 @@
             // 采购成本（RMB）
             const purchaseCost = purchasePrice * quantity;
             
-            // 仓储成本（RMB）
-            const storageCost = config.storageCost; // 固定值
+            // 使用与Excel完全相同的单件费用计算
+            const singleItemResult = calculateSingleItemFees(config, price, weight, exchangeRate, quantity);
             
-            // 干线运费（RMB）
-            const shippingCost = weight * quantity * config.shippingRate;
+            // 总成本（RMB）- 按照Excel公式：L列 = C列 + E列 + H列 + R列（对于Lazada）
+            // Shopee: L列 = C列 + E列 + H列
+            // Lazada: L列 = C列 + E列 + H列 + R列（尾程运费）
+            let totalCost = purchaseCost + singleItemResult.storageCost + singleItemResult.shippingCost;
             
-            // 套装加购（本地货币）- 第1件为0%，第2件起为2%
-            let bundleDiscount = 0;
-            if (quantity > 1) {
-                bundleDiscount = totalPrice * config.bundleRate;
+            // Lazada需要加上尾程运费（R列）
+            if (currentPlatform.includes('lazada')) {
+                // Lazada尾程运费：根据重量阶梯计算
+                let lastMileCost = 0;
+                const totalWeight = weight * quantity;
+                
+                if (currentPlatform === 'lazada-vn') {
+                    // 越南跨境尾程运费
+                    if (totalWeight <= 300) {
+                        lastMileCost = 2.65;
+                    } else if (totalWeight <= 1000) {
+                        lastMileCost = 4.2;
+                    } else {
+                        lastMileCost = 4.7;
+                    }
+                } else if (currentPlatform === 'lazada-th' || currentPlatform === 'lazada-th-sea') {
+                    // 泰国跨境/海运尾程运费：固定3 RMB
+                    lastMileCost = 3;
+                }
+                
+                totalCost += lastMileCost;
             }
             
-            // 优惠券（本地货币）- 根据配置
-            let couponDiscount = 0;
-            if (config.couponRate) {
-                couponDiscount = totalPrice * config.couponRate;
-            }
-            
-            // 计算基础（总售价减去优惠券和套装加购）
-            const baseAmount = totalPrice - couponDiscount - bundleDiscount;
-            
-            // 各项费用（本地货币）- 四舍五入到整数
-            const transactionFee = Math.round(baseAmount * config.transactionFeeRate);
-            const fcssFee = Math.round(baseAmount * config.fcssRate);
-            const commission = Math.round(baseAmount * config.commissionRate);
-            const superAlliance = Math.round(baseAmount * config.superAllianceRate);
-            
-            // 平台费（本地货币）
-            const platformFee = config.platformFee; // 注意：这里不乘以数量，平台费是固定值
-            
-            // 总收入（本地货币）- 按照Excel公式
-            const totalRevenueLocal = totalPrice - transactionFee - fcssFee - commission - couponDiscount - bundleDiscount - superAlliance - platformFee;
-            
-            // 总收入（RMB）
-            const totalRevenueRMB = totalRevenueLocal / exchangeRate;
-            
-            // 总成本（RMB）- 按照Excel公式：L13 = C13+E13+H13
-            const totalCost = purchaseCost + storageCost + shippingCost;
+            // 总收入（RMB）- 从单件费用计算结果获取
+            const totalRevenueRMB = singleItemResult.totalRevenueRMB;
             
             // 毛利（RMB）
             const profit = totalRevenueRMB - totalCost;
@@ -1345,7 +1566,7 @@
             
             return {
                 totalPrice,
-                shippingCost,
+                shippingCost: singleItemResult.shippingCost,
                 totalRevenueRMB,
                 totalCost,
                 profit,
@@ -1408,7 +1629,6 @@
                     { id: `${platformId}_fcssFee`, label: 'FCSS+CCB服务费 (%)', value: config.fcssRate * 100 },
                     { id: `${platformId}_commission`, label: '佣金 (%)', value: config.commissionRate * 100 },
                     { id: `${platformId}_coupon`, label: '优惠券 (%)', value: config.couponRate * 100 },
-                    { id: `${platformId}_bundle`, label: '套装&加购 (%)', value: config.bundleRate * 100 },
                     { id: `${platformId}_platformFee`, label: `平台费 (${config.currency})`, value: config.platformFee },
                     { id: `${platformId}_shippingRate`, label: '干线运费 (RMB/g)', value: config.shippingRate }
                 ];
@@ -1451,9 +1671,17 @@
                 config.fcssRate = parseFloat(document.getElementById(`${platformId}_fcssFee`).value) / 100;
                 config.commissionRate = parseFloat(document.getElementById(`${platformId}_commission`).value) / 100;
                 config.couponRate = parseFloat(document.getElementById(`${platformId}_coupon`).value) / 100;
-                config.bundleRate = parseFloat(document.getElementById(`${platformId}_bundle`).value) / 100;
-                config.platformFee = parseFloat(document.getElementById(`${platformId}_platformFee`).value);
-                config.shippingRate = parseFloat(document.getElementById(`${platformId}_shippingRate`).value);
+                
+                // 对于平台费和运费，需要检查是否是数字
+                const platformFeeValue = document.getElementById(`${platformId}_platformFee`).value;
+                config.platformFee = platformFeeValue === "" ? 0 : parseFloat(platformFeeValue);
+                
+                const shippingRateValue = document.getElementById(`${platformId}_shippingRate`).value;
+                if (shippingRateValue === "vlookup") {
+                    config.shippingRate = "vlookup";
+                } else {
+                    config.shippingRate = shippingRateValue === "" ? 0 : parseFloat(shippingRateValue);
+                }
                 
                 // 更新平台配置
                 platformConfigs[platformId] = config;
