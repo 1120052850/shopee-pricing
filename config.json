@@ -116,7 +116,7 @@
       "shippingDescription": "泰国跨境干线运费",
       "lastMileCost": 3,
       "subsidy": 29,
-      "precision": 1
+      "precision": 2
     },
     "lazada-th-sea": {
       "name": "Lazada泰国海运",
@@ -140,7 +140,7 @@
       "shippingDescription": "泰国海运干线运费",
       "lastMileCost": 3,
       "subsidy": 29,
-      "precision": 1
+      "precision": 2
     }
   },
   "generalSettings": {
